@@ -24,6 +24,8 @@ export const translations = {
       of: "из",
       results: "результатов",
       page: "Страница",
+      userAgent: "User Agent",
+      delay: "Delay",
     },
     common: {
       accessDenied: "Доступ запрещен",
@@ -66,6 +68,8 @@ export const translations = {
       of: "jemi",
       results: "netije",
       page: "Sahypa",
+      userAgent: "User Agent",
+      delay: "Delay",
     },
     common: {
       accessDenied: "Giriş gadagan",
@@ -108,10 +112,13 @@ export const translations = {
       of: "of",
       results: "results",
       page: "Page",
+      userAgent: "User Agent",
+      delay: "Delay",
     },
     common: {
       accessDenied: "Access Denied",
-      noPermission: "You don't have the necessary permissions to view this page.",
+      noPermission:
+        "You don't have the necessary permissions to view this page.",
       filters: "Filters",
       clearFilters: "Clear Filters",
       recordsPerPage: "Records per page",
@@ -125,5 +132,4 @@ export const translations = {
       all: "All",
     },
   },
-}
-
+};

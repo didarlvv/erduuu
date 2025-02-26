@@ -4,7 +4,8 @@ export const roleTranslations = {
       title: "Роли",
       createRole: "Создать роль",
       manageRoles: "Управление ролями",
-      manageDescription: "Просматривайте, фильтруйте и управляйте ролями системы.",
+      manageDescription:
+        "Просматривайте, фильтруйте и управляйте ролями системы.",
       searchPlaceholder: "Поиск ролей...",
       status: "Статус",
       selectStatus: "Выберите статус",
@@ -83,43 +84,44 @@ export const roleTranslations = {
   },
   tk: {
     roles: {
-      title: "Wezipeler",
-      createRole: "Wezipe döretmek",
-      manageRoles: "Wezipeleri dolandyrmak",
-      manageDescription: "Ulgamyň wezipelerini gözden geçiriň, süzgüçläň we dolandyryň.",
-      searchPlaceholder: "Wezipeleri gözlemek...",
+      title: "Rollar",
+      createRole: "Rol döretmek",
+      manageRoles: "Rollary dolandyrmak",
+      manageDescription:
+        "Ulgamyň rollaryny gözden geçiriň, süzgüçläň we dolandyryň.",
+      searchPlaceholder: "Rollary gözlemek...",
       status: "Ýagdaý",
       selectStatus: "Ýagdaýy saýlaň",
       active: "Işjeň",
       inactive: "Işjeň däl",
-      loadError: "Wezipeleri ýüklemekde ýalňyşlyk",
-      noRolesFound: "Wezipe tapylmady",
+      loadError: "Rollary ýüklemekde ýalňyşlyk",
+      noRolesFound: "Rol tapylmady",
       name: "Ady",
       slug: "Identifikator",
       permissions: "Rugsat",
       selectPermissions: "Rugsatlary saýlaň",
       create: {
-        title: "Wezipe döretmek",
-        description: "Täze wezipe dörediň we oňa rugsat beriň.",
-        success: "Wezipe üstünlikli döredildi",
-        successDescription: "Täze wezipe ulgama üstünlikli goşuldy.",
-        error: "Wezipe döretmekde ýalňyşlyk",
+        title: "Rol döretmek",
+        description: "Täze rol dörediň we oňa rugsat beriň.",
+        success: "Rol üstünlikli döredildi",
+        successDescription: "Täze rol ulgama üstünlikli goşuldy.",
+        error: "Rol döretmekde ýalňyşlyk",
         creating: "Döredilýär...",
-        createRole: "Wezipe döretmek",
+        createRole: "Rol döretmek",
         permissionRequired: "Azyndan bir rugsat saýlaň",
         loadPermissionsError: "Rugsatlary ýüklemekde ýalňyşlyk",
       },
       edit: {
-        title: "Wezipäni üýtgetmek",
-        description: "Wezipe barada maglumaty we onuň rugsatlaryny üýtgediň.",
-        success: "Wezipe üstünlikli täzelendi",
-        successDescription: "Wezipe baradaky maglumat üstünlikli täzelendi.",
-        error: "Wezipäni täzelemekde ýalňyşlyk",
-        loadError: "Wezipe maglumatlaryny ýüklemekde ýalňyşlyk",
+        title: "Roly üýtgetmek",
+        description: "Rol barada maglumaty we onuň rugsatlaryny üýtgediň.",
+        success: "Rol üstünlikli täzelendi",
+        successDescription: "Rol baradaky maglumat üstünlikli täzelendi.",
+        error: "Roly täzelemekde ýalňyşlyk",
+        loadError: "Rol maglumatlaryny ýüklemekde ýalňyşlyk",
         saving: "Ýatda saklanýar...",
         saveChanges: "Üýtgeşmeleri ýatda saklamak",
         noChanges: "Ýatda saklamak üçin üýtgeşme ýok",
-        noChangesDescription: "Wezipede hiç hili üýtgeşme etmediňiz.",
+        noChangesDescription: "Rolda hiç hili üýtgeşme etmediňiz.",
         missingData: "Zerur maglumatlar ýok",
         loadPermissionsError: "Rugsatlary ýüklemekde ýalňyşlyk",
       },
@@ -166,37 +168,81 @@ export const roleTranslations = {
   en: {
     roles: {
       title: "Roles",
+      createRole: "Create Role",
+      manageRoles: "Manage Roles",
+      manageDescription: "View, filter, and manage system roles.",
+      searchPlaceholder: "Search roles...",
+      status: "Status",
+      selectStatus: "Select status",
+      active: "Active",
+      inactive: "Inactive",
+      loadError: "Error loading roles",
+      noRolesFound: "No roles found",
       name: "Name",
       slug: "Identifier",
-      searchPlaceholder: "Search roles...",
-      noRolesFound: "No roles found",
+      permissions: "Permissions",
+      selectPermissions: "Select permissions",
+      create: {
+        title: "Create Role",
+        description: "Create a new role and assign permissions to it.",
+        success: "Role created successfully",
+        successDescription:
+          "The new role has been successfully added to the system.",
+        error: "Error creating role",
+        creating: "Creating...",
+        createRole: "Create Role",
+        permissionRequired: "Select at least one permission",
+        loadPermissionsError: "Error loading permissions",
+      },
+      edit: {
+        title: "Edit Role",
+        description: "Modify role information and its permissions.",
+        success: "Role updated successfully",
+        successDescription:
+          "The role information has been successfully updated.",
+        error: "Error updating role",
+        loadError: "Error loading role data",
+        saving: "Saving...",
+        saveChanges: "Save Changes",
+        noChanges: "No changes to save",
+        noChangesDescription: "You haven't made any changes to the role.",
+        missingData: "Missing required data",
+        loadPermissionsError: "Error loading permissions",
+      },
     },
     common: {
-      actions: "Actions",
-      edit: "Edit",
-      delete: "Delete",
-      openMenu: "Open menu",
+      accessDenied: "Access Denied",
+      noPermission:
+        "You don't have the necessary permissions to view this page.",
       filters: "Filters",
-      clearFilters: "Clear filters",
+      clearFilters: "Clear Filters",
       recordsPerPage: "Records per page",
       records: "records",
       sortBy: "Sort by",
-      direction: "Direction",
-      language: "Language",
       selectField: "Select field",
+      direction: "Direction",
       selectDirection: "Select direction",
-      selectLanguage: "Select language",
       ascending: "Ascending",
       descending: "Descending",
+      language: "Language",
+      selectLanguage: "Select language",
+      all: "All",
+      creationDate: "Creation Date",
+      actions: "Actions",
+      edit: "Edit",
+      delete: "Delete",
+      cancel: "Cancel",
+      save: "Save",
+      openMenu: "Open menu",
+      loading: "Loading...",
+      errorTitle: "Error",
       showing: "Showing",
       to: "to",
       of: "of",
       results: "results",
-      page: "Page",
       previous: "Previous",
       next: "Next",
-      loading: "Loading...",
-      creationDate: "Creation Date",
+      page: "Page",
     },
     languageSelector: {
       turkmen: "Turkmen",
@@ -204,17 +250,17 @@ export const roleTranslations = {
       english: "English",
     },
   },
-}
+};
 
 export const translate = (key: string, language: string): string => {
-  const keys = key.split(".")
-  let translation: any = roleTranslations[language as keyof typeof roleTranslations]
+  const keys = key.split(".");
+  let translation: any =
+    roleTranslations[language as keyof typeof roleTranslations];
   for (const k of keys) {
     if (translation[k] === undefined) {
-      return key
+      return key;
     }
-    translation = translation[k]
+    translation = translation[k];
   }
-  return translation
-}
-
+  return translation;
+};

@@ -3,7 +3,8 @@ export const translations = {
     files: {
       title: "Файлы",
       manageFiles: "Управление файлами",
-      manageDescription: "Просматривайте, фильтруйте и управляйте файлами системы.",
+      manageDescription:
+        "Просматривайте, фильтруйте и управляйте файлами системы.",
       searchPlaceholder: "Поиск файлов...",
       loadError: "Ошибка загрузки файлов",
       creationDate: "Дата создания",
@@ -22,6 +23,7 @@ export const translations = {
       of: "из",
       results: "результатов",
       page: "Страница",
+      createdBy: "Создано",
     },
     common: {
       accessDenied: "Доступ запрещен",
@@ -50,7 +52,8 @@ export const translations = {
     files: {
       title: "Faýllar",
       manageFiles: "Faýllary dolandyrmak",
-      manageDescription: "Ulgamyň faýllaryny gözden geçiriň, süzgüçleň we dolandyryň.",
+      manageDescription:
+        "Ulgamyň faýllaryny gözden geçiriň, süzgüçleň we dolandyryň.",
       searchPlaceholder: "Faýllary gözle...",
       loadError: "Faýllary ýüklemekde ýalňyşlyk",
       creationDate: "Döredilen senesi",
@@ -69,6 +72,7 @@ export const translations = {
       of: "jemi",
       results: "netije",
       page: "Sahypa",
+      createdBy: "Döredilen",
     },
     common: {
       accessDenied: "Giriş gadagan",
@@ -116,10 +120,12 @@ export const translations = {
       of: "of",
       results: "results",
       page: "Page",
+      createdBy: "Created By",
     },
     common: {
       accessDenied: "Access Denied",
-      noPermission: "You don't have the necessary permissions to view this page.",
+      noPermission:
+        "You don't have the necessary permissions to view this page.",
       filters: "Filters",
       clearFilters: "Clear Filters",
       recordsPerPage: "Records per page",
@@ -140,5 +146,4 @@ export const translations = {
       english: "English",
     },
   },
-}
-
+};

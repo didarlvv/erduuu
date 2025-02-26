@@ -52,9 +52,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
-// import { useEffect } from "react"
-// import { fetchMailTypes } from "@/lib/api"
-// import type { MailType } from "@/types/mail-types"
+import logo from "@/public/energo.png";
 
 const SidebarContext = createContext<{
   isOpen: boolean;
@@ -237,9 +235,9 @@ const translations = {
   tk: {
     "sidebar.dashboard": "Baş sahypa",
     "sidebar.users": "Ulanyjylar",
-    "sidebar.roles": "Wezipeler",
-    "sidebar.organizations": "Guramalar",
-    "sidebar.responsibilities": "Jogapkärçilikler",
+    "sidebar.roles": "Rollar",
+    "sidebar.organizations": "Edaralar",
+    "sidebar.responsibilities": "Wezipeler",
     "sidebar.mailTypes": "Hat görnüşleri",
     "sidebar.permissions": "Rugsatlar",
     "sidebar.files": "Faýllar",
@@ -328,11 +326,11 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { language } = useLanguage();
-  const permissions = menuItems.map((item) =>
-    item.permission ? usePermission(item.permission) : true
-  );
-  const { language: currentLanguage } = useLanguage();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const permissions = menuItems.map((item) => {
+    return item.permission ? usePermission(item.permission) : true;
+  });
+  const { language: currentLanguage } = useLanguage();
 
   const LogoutButton = () => {
     const buttonClasses = cn(
@@ -421,7 +419,7 @@ export function Sidebar() {
               )}
             >
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-wjTnDDr5vGt6haZTkljVCbMMF60pP6.png"
+                src={logo}
                 alt={translate("sidebar.ministryLogo", language)}
                 width={isOpen ? 56 : 48}
                 height={isOpen ? 56 : 48}
@@ -588,4 +586,3 @@ export function Sidebar() {
     </TooltipProvider>
   );
 }
-

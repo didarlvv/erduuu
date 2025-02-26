@@ -1,70 +1,89 @@
-"use client"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { FileText, Download, ChevronLeft, ChevronRight } from "lucide-react"
-import type { File } from "@/lib/types"
-import { Skeleton } from "@/components/ui/skeleton"
-import { downloadFile } from "@/lib/api"
-import { toast } from "sonner"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { translations } from "./files.translations"
+"use client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { FileText, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import type { File } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { downloadFile } from "@/lib/api";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "./files.translations";
 
 interface FilesTableProps {
-  files: File[]
-  total: number
-  currentPage: number
-  pageSize: number
-  onPageChange: (page: number) => void
-  onSearch: (term: string) => void
-  loading: boolean
+  files: File[];
+  total: number;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onSearch: (term: string) => void;
+  loading: boolean;
 }
 
 const translate = (key: string, language: string): string => {
-  const keys = key.split(".")
-  let translation: any = translations[language as keyof typeof translations]
+  const keys = key.split(".");
+  let translation: any = translations[language as keyof typeof translations];
   for (const k of keys) {
     if (translation[k] === undefined) {
-      return key
+      return key;
     }
-    translation = translation[k]
+    translation = translation[k];
   }
-  return translation
-}
+  return translation;
+};
 
-export function FilesTable({ files, total, currentPage, pageSize, onPageChange, loading }: FilesTableProps) {
-  const { language } = useLanguage()
+export function FilesTable({
+  files,
+  total,
+  currentPage,
+  pageSize,
+  onPageChange,
+  loading,
+}: FilesTableProps) {
+  const { language } = useLanguage();
 
-  const totalPages = Math.ceil(total / pageSize)
+  const totalPages = Math.ceil(total / pageSize);
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (
+      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+    );
+  };
 
   const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString(language === "ru" ? "ru-RU" : language === "tk" ? "tk-TM" : "en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+    return new Date(Number.parseInt(timestamp)).toLocaleString(
+      language === "ru" ? "ru-RU" : language === "tk" ? "tk-TM" : "en-US",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
+  };
 
   const handleDownload = async (file: File) => {
     try {
-      await downloadFile(file.id)
+      await downloadFile(file.id);
     } catch (error) {
-      console.error("Error downloading file:", error)
-      toast.error(translate("files.errorDownloading", language))
+      console.error("Error downloading file:", error);
+      toast.error(translate("files.errorDownloading", language));
     }
-  }
+  };
 
-  const startRecord = (currentPage - 1) * pageSize + 1
-  const endRecord = Math.min(currentPage * pageSize, total)
+  const startRecord = (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, total);
 
   const LoadingSkeleton = () => (
     <>
@@ -86,12 +105,15 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
             <Skeleton className="h-4 w-[150px]" />
           </TableCell>
           <TableCell>
+            <Skeleton className="h-4 w-[100px]" />
+          </TableCell>
+          <TableCell>
             <Skeleton className="h-8 w-8 rounded-full" />
           </TableCell>
         </TableRow>
       ))}
     </>
-  )
+  );
 
   return (
     <div className="space-y-4">
@@ -104,7 +126,10 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
               <TableHead>{translate("files.originalName", language)}</TableHead>
               <TableHead>{translate("files.fileSize", language)}</TableHead>
               <TableHead>{translate("files.uploadDate", language)}</TableHead>
-              <TableHead className="text-right">{translate("files.actions", language)}</TableHead>
+              <TableHead>{translate("files.createdBy", language)}</TableHead>
+              <TableHead className="text-right">
+                {translate("files.actions", language)}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,7 +137,10 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
               <LoadingSkeleton />
             ) : files.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground"
+                >
                   {translate("files.noFiles", language)}
                 </TableCell>
               </TableRow>
@@ -126,6 +154,7 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
                   <TableCell>{file.original_name}</TableCell>
                   <TableCell>{formatFileSize(file.size)}</TableCell>
                   <TableCell>{formatDate(file.created_at)}</TableCell>
+                  <TableCell>{file.created_by_id}</TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
@@ -134,7 +163,9 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
                       className="hover:text-blue-500"
                     >
                       <Download className="h-4 w-4" />
-                      <span className="sr-only">{translate("files.download", language)}</span>
+                      <span className="sr-only">
+                        {translate("files.download", language)}
+                      </span>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -146,8 +177,10 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {translate("files.showing", language)} {startRecord} {translate("files.to", language)} {endRecord}{" "}
-          {translate("files.of", language)} {total} {translate("files.results", language)}
+          {translate("files.showing", language)} {startRecord}{" "}
+          {translate("files.to", language)} {endRecord}{" "}
+          {translate("files.of", language)} {total}{" "}
+          {translate("files.results", language)}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -159,7 +192,8 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="text-sm">
-            {translate("files.page", language)} {currentPage} {translate("files.of", language)} {totalPages}
+            {translate("files.page", language)} {currentPage}{" "}
+            {translate("files.of", language)} {totalPages}
           </div>
           <Button
             variant="outline"
@@ -172,6 +206,5 @@ export function FilesTable({ files, total, currentPage, pageSize, onPageChange, 
         </div>
       </div>
     </div>
-  )
+  );
 }
-

@@ -3,7 +3,8 @@ export const mailTypeTranslations = {
     title: "Типы писем",
     createMailType: "Создать тип письма",
     manageMailTypes: "Управление типами писем",
-    manageDescription: "Просмотр, создание и редактирование типов писем в системе",
+    manageDescription:
+      "Просмотр, создание и редактирование типов писем в системе",
     searchPlaceholder: "Поиск типов писем...",
     name: "Название",
     identifier: "Идентификатор",
@@ -35,8 +36,8 @@ export const mailTypeTranslations = {
     noChangesDescription: "Данные типа письма не были изменены",
     updateSuccess: "Тип письма обновлен",
     updateSuccessDescription: "Данные типа письма были успешно обновлены",
-    updateError: "Не удалось обновить тип письма. Пожалуйста, попробуйте снова.",
-    createMailType: "Создать тип письма",
+    updateError:
+      "Не удалось обновить тип письма. Пожалуйста, попробуйте снова.",
     fillForm: "Заполните форму ниже для создания нового типа письма в системе",
     abbreviation: "Сокращение",
     abbreviationPlaceholder: "пример-типа-письма",
@@ -45,12 +46,14 @@ export const mailTypeTranslations = {
     create: "Создать",
     success: "Успешно",
     successDescription: "Новый тип письма был успешно создан",
-    errorDescription: "Не удалось создать тип письма. Пожалуйста, попробуйте снова.",
+    errorDescription:
+      "Не удалось создать тип письма. Пожалуйста, попробуйте снова.",
     errors: {
       emptySlug: "Сокращение не может быть пустым",
       emptyName: "Название типа письма не может быть пустым",
       loadError: "Ошибка загрузки",
-      loadErrorDescription: "Не удалось загрузить типы писем. Пожалуйста, попробуйте снова.",
+      loadErrorDescription:
+        "Не удалось загрузить типы писем. Пожалуйста, попробуйте снова.",
     },
     common: {
       accessDenied: "Доступ запрещен",
@@ -77,12 +80,15 @@ export const mailTypeTranslations = {
       russian: "Русский",
       english: "English",
     },
+    slug: "Slug",
+    isMain: "Основной",
   },
   tk: {
     title: "Hat görnüşleri",
     createMailType: "Hat görnüşini döretmek",
     manageMailTypes: "Hat görnüşlerini dolandyrmak",
-    manageDescription: "Ulgamdaky hat görnüşlerini görmek, döretmek we üýtgetmek",
+    manageDescription:
+      "Ulgamdaky hat görnüşlerini görmek, döretmek we üýtgetmek",
     searchPlaceholder: "Hat görnüşlerini gözlemek...",
     name: "Ady",
     identifier: "Kesgitleýji",
@@ -113,13 +119,15 @@ export const mailTypeTranslations = {
     noChanges: "Üýtgeşme ýok",
     noChangesDescription: "Hat görnüşiniň maglumatlary üýtgedilmedi",
     updateSuccess: "Hat görnüşi täzelendi",
-    updateSuccessDescription: "Hat görnüşiniň maglumatlary üstünlikli täzelendi",
+    updateSuccessDescription:
+      "Hat görnüşiniň maglumatlary üstünlikli täzelendi",
     updateError: "Hat görnüşini täzeläp bolmady. Gaýtadan synanyşyň.",
-    createMailType: "Hat görnüşini döretmek",
-    fillForm: "Ulgamda täze hat görnüşini döretmek üçin aşakdaky formany dolduryň",
+    fillForm:
+      "Ulgamda täze hat görnüşini döretmek üçin aşakdaky formany dolduryň",
     abbreviation: "Gysgaltma",
     abbreviationPlaceholder: "hat-gornusi-mysaly",
-    abbreviationHint: "Hat görnüşiniň özboluşly kesgitleýjisi hökmünde ulanylýar",
+    abbreviationHint:
+      "Hat görnüşiniň özboluşly kesgitleýjisi hökmünde ulanylýar",
     creating: "Döredilýär...",
     create: "Döretmek",
     success: "Üstünlikli",
@@ -129,7 +137,8 @@ export const mailTypeTranslations = {
       emptySlug: "Gysgaltma boş bolmaly däl",
       emptyName: "Hat görnüşiniň ady boş bolmaly däl",
       loadError: "Ýüklemek säwligi",
-      loadErrorDescription: "Hat görnüşlerini ýükläp bolmady. Gaýtadan synanyşyň.",
+      loadErrorDescription:
+        "Hat görnüşlerini ýükläp bolmady. Gaýtadan synanyşyň.",
     },
     common: {
       accessDenied: "Girmäge rugsat berilmedi",
@@ -156,6 +165,8 @@ export const mailTypeTranslations = {
       russian: "Русча",
       english: "English",
     },
+    slug: "Slug",
+    isMain: "Esasy",
   },
   en: {
     title: "Mail Types",
@@ -194,7 +205,6 @@ export const mailTypeTranslations = {
     updateSuccess: "Mail Type Updated",
     updateSuccessDescription: "Mail type data has been successfully updated",
     updateError: "Failed to update mail type. Please try again.",
-    createMailType: "Create Mail Type",
     fillForm: "Fill out the form below to create a new mail type in the system",
     abbreviation: "Abbreviation",
     abbreviationPlaceholder: "example-mail-type",
@@ -235,6 +245,7 @@ export const mailTypeTranslations = {
       russian: "Русский",
       english: "English",
     },
+    slug: "Slug",
+    isMain: "Is Main",
   },
-}
-
+};
