@@ -1,41 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/components/ui/use-toast"
-import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect"
-import { SearchableUserSelect } from "@/components/SearchableUserSelect"
-import { createResponsibility } from "@/lib/api"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { responsibilityTranslations } from "./responsibility.translations"
-import type { CreateResponsibilityDto } from "@/lib/types"
-import { Briefcase, Loader2 } from "lucide-react"
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect";
+import { SearchableUserSelect } from "@/components/SearchableUserSelect";
+import { createResponsibility } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { responsibilityTranslations } from "./responsibility.translations";
+import type { CreateResponsibilityDto } from "@/lib/types";
+import { Briefcase, Loader2 } from "lucide-react";
 
 const translate = (key: string, language: string): string => {
-  const keys = key.split(".")
-  let translation: any = responsibilityTranslations[language as keyof typeof responsibilityTranslations]
+  const keys = key.split(".");
+  let translation: any =
+    responsibilityTranslations[
+      language as keyof typeof responsibilityTranslations
+    ];
   for (const k of keys) {
     if (translation[k] === undefined) {
-      return key
+      return key;
     }
-    translation = translation[k]
+    translation = translation[k];
   }
-  return translation
-}
+  return translation;
+};
 
 interface CreateResponsibilityDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
-export function CreateResponsibilityDrawer({ open, onOpenChange, onSuccess }: CreateResponsibilityDrawerProps) {
+export function CreateResponsibilityDrawer({
+  open,
+  onOpenChange,
+  onSuccess,
+}: CreateResponsibilityDrawerProps) {
   const [formData, setFormData] = useState<CreateResponsibilityDto>({
     slug: "",
     to_read_all: false,
@@ -47,35 +59,41 @@ export function CreateResponsibilityDrawer({ open, onOpenChange, onSuccess }: Cr
       { name: "", lang: "tk" },
       { name: "", lang: "ru" },
     ],
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
-  const { language } = useLanguage()
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { language } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    // e.preventDefault()
+    setIsLoading(true);
 
     try {
-      await createResponsibility(formData)
+      await createResponsibility(formData);
       toast({
         title: translate("responsibilities.responsibilityCreated", language),
-        description: translate("responsibilities.createSuccessDescription", language),
+        description: translate(
+          "responsibilities.createSuccessDescription",
+          language
+        ),
         variant: "default",
-      })
-      onSuccess()
-      onOpenChange(false)
+      });
+      onSuccess();
+      onOpenChange(false);
     } catch (error) {
-      console.error("Error creating responsibility:", error)
+      console.error("Error creating responsibility:", error);
       toast({
         title: translate("responsibilities.createError", language),
-        description: translate("responsibilities.createErrorDescription", language),
+        description: translate(
+          "responsibilities.createErrorDescription",
+          language
+        ),
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -96,50 +114,71 @@ export function CreateResponsibilityDrawer({ open, onOpenChange, onSuccess }: Cr
           <div className="flex-1 overflow-y-auto py-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="slug">{translate("responsibilities.name", language)}</Label>
+                <Label htmlFor="slug">
+                  {translate("responsibilities.name", language)}
+                </Label>
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label>{translate("responsibilities.organization", language)}</Label>
-                <SearchableOrganizationSelect onSelect={(id) => setFormData({ ...formData, organization_id: id })} />
+                <Label>
+                  {translate("responsibilities.organization", language)}
+                </Label>
+                <SearchableOrganizationSelect
+                  onSelect={(id) =>
+                    setFormData({ ...formData, organization_id: id })
+                  }
+                />
               </div>
               <div className="space-y-2">
                 <Label>User</Label>
-                <SearchableUserSelect onSelect={(id) => setFormData({ ...formData, user_id: id })} />
+                <SearchableUserSelect
+                  onSelect={(id) => setFormData({ ...formData, user_id: id })}
+                />
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="to_read_all"
                   checked={formData.to_read_all}
-                  onCheckedChange={(checked) => setFormData({ ...formData, to_read_all: checked })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, to_read_all: checked })
+                  }
                 />
-                <Label htmlFor="to_read_all">{translate("responsibilities.readAll", language)}</Label>
+                <Label htmlFor="to_read_all">
+                  {translate("responsibilities.readAll", language)}
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="to_send_all"
                   checked={formData.to_send_all}
-                  onCheckedChange={(checked) => setFormData({ ...formData, to_send_all: checked })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, to_send_all: checked })
+                  }
                 />
-                <Label htmlFor="to_send_all">{translate("responsibilities.sendAll", language)}</Label>
+                <Label htmlFor="to_send_all">
+                  {translate("responsibilities.sendAll", language)}
+                </Label>
               </div>
               {formData.names.map((name, index) => (
                 <div key={name.lang} className="space-y-2">
-                  <Label
-                    htmlFor={`name-${name.lang}`}
-                  >{`${translate("responsibilities.name", language)} (${name.lang.toUpperCase()})`}</Label>
+                  <Label htmlFor={`name-${name.lang}`}>{`${translate(
+                    "responsibilities.name",
+                    language
+                  )} (${name.lang.toUpperCase()})`}</Label>
                   <Input
                     id={`name-${name.lang}`}
                     value={name.name}
                     onChange={(e) => {
-                      const newNames = [...formData.names]
-                      newNames[index].name = e.target.value
-                      setFormData({ ...formData, names: newNames })
+                      const newNames = [...formData.names];
+                      newNames[index].name = e.target.value;
+                      setFormData({ ...formData, names: newNames });
                     }}
                     required
                   />
@@ -170,6 +209,5 @@ export function CreateResponsibilityDrawer({ open, onOpenChange, onSuccess }: Cr
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
-

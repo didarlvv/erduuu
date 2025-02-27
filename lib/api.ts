@@ -56,6 +56,7 @@ import type {
 import type { ChatUsersResponse, ChatUsersQueryParams } from "@/lib/types";
 import type { MailType } from "@/lib/types";
 import type { DetailedLogResponse } from "@/lib/types";
+import type { CreateResponsibilityDto } from "@/lib/types";
 
 const api = createAuthenticatedAxios();
 
@@ -189,6 +190,13 @@ export async function fetchResponsibilities(
 ): Promise<ResponsibilitiesResponse> {
   const response = await api.get("/manager/responsibilities", { params });
   return response.data;
+}
+
+export async function createResponsibility(
+  data: CreateResponsibilityDto
+): Promise<void> {
+  const response = await api.post("/manager/responsibilities", data);
+  if (!response.data) throw new Error("Failed to create responsibility");
 }
 
 export async function fetchResponsibilitiesWithPermissions(
