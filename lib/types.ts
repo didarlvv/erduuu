@@ -163,24 +163,57 @@ export interface CreateInternalMailResponse {
   timestamp: number;
 }
 
-export interface InternalMailDetail extends InternalMail {
-  content?: string;
-  attachments?: {
+export interface InternalMailDetail {
+  id: number;
+  code: string;
+  created_at: string;
+  description: string;
+  files: {
     id: number;
+    path: string;
+    original_name: string;
     name: string;
-    url: string;
+    size: number;
   }[];
-  recipients?: {
+  is_archived: boolean;
+  is_read: boolean;
+  level: number;
+  parent_id: number | null;
+  mail_type: {
     id: number;
-    full_name: string;
-    email: string;
-  }[];
-  sender?: {
-    id: number;
-    full_name: string;
-    email: string;
-    avatar?: string;
+    slug: string;
+    names: {
+      name: string;
+      lang: string;
+    }[];
   };
+  receiver: {
+    id: number;
+    names: {
+      name: string;
+      lang: string;
+    }[];
+  };
+  receiver_fullname: string;
+  sender: {
+    id: number;
+    names: {
+      name: string;
+      lang: string;
+    }[];
+  };
+  sender_fullname: string;
+  viewed_at: string;
+  status: string;
+  sent_time: string;
+  title: string;
+  children: InternalMailDetail[];
+}
+
+export interface InternalMailDetailResponse {
+  payload: InternalMailDetail;
+  delay: number;
+  timestamp: number;
 }
 
 // User Types

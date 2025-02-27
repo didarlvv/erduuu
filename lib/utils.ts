@@ -1,15 +1,22 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export function formatDate(timestamp: number | null | undefined, language: string): string {
+export function formatDate(
+  timestamp: number | string | null | undefined,
+  language: string
+): string {
   if (timestamp == null) {
-    return "N/A"
+    return "N/A";
   }
-  const date = new Date(timestamp)
+  const date = new Date(Number(timestamp));
+  if (isNaN(date.getTime())) {
+    console.error("Invalid timestamp:", timestamp);
+    return "Invalid Date";
+  }
   return new Intl.DateTimeFormat(language, {
     year: "numeric",
     month: "long",
@@ -17,32 +24,51 @@ export function formatDate(timestamp: number | null | undefined, language: strin
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  }).format(date)
+  }).format(date);
 }
 
-export function formatDateCompact(timestamp: number | null | undefined, language: string): string {
+export function formatDateCompact(
+  timestamp: number | string | null | undefined,
+  language: string
+): string {
   if (timestamp == null) {
-    return "N/A"
+    return "N/A";
   }
-  const date = new Date(timestamp)
+  const date = new Date(Number(timestamp));
+  if (isNaN(date.getTime())) {
+    console.error("Invalid timestamp:", timestamp);
+    return "Invalid Date";
+  }
   return new Intl.DateTimeFormat(language, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date)
+  }).format(date);
 }
 
-export function safeJsonParse<T>(jsonString: string | null | undefined, fallback: T): T {
+export function safeJsonParse<T>(
+  jsonString: string | null | undefined,
+  fallback: T
+): T {
   if (jsonString == null) {
-    return fallback
+    return fallback;
   }
   try {
-    return JSON.parse(jsonString) as T
+    return JSON.parse(jsonString) as T;
   } catch (error) {
-    console.error("Error parsing JSON:", error)
-    return fallback
+    console.error("Error parsing JSON:", error);
+    return fallback;
   }
 }
 
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (
+    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  );
+}
