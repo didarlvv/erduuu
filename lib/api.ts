@@ -7,6 +7,7 @@ import type {
   UpdateRoleRequest,
   UpdateRoleResponse,
   RoleDetailResponse,
+  CreateRoleDto,
 } from "@/lib/types";
 import type {
   OrganizationsResponse,
@@ -149,6 +150,11 @@ export async function updateRole(
 ): Promise<UpdateRoleResponse> {
   const response = await api.patch(`/manager/roles/${id}`, data);
   return response.data;
+}
+
+export async function createRole(data: CreateRoleDto): Promise<void> {
+  const response = await api.post("/manager/roles", data);
+  if (!response.data) throw new Error("Failed to create role");
 }
 
 // Organizations
