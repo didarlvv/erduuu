@@ -287,7 +287,6 @@ export async function createExternalMail(
     ...data,
     type: "inbox",
     received_time: Date.now(),
-    sent_time: 0,
   };
   const response = await api.post("/manager/external-mail", mailData);
   if (!response.data) throw new Error("Failed to create external mail");

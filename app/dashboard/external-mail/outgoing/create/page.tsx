@@ -1,37 +1,48 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect"
-import { SearchableResponsibilitySelect } from "@/components/SearchableResponsibilitySelect"
-import { SearchableMailTypeSelect } from "@/components/SearchableMailTypeSelect"
-import { FileUpload } from "@/components/FileUpload"
-import { createExternalMail } from "@/lib/api"
-import { useToast } from "@/components/ui/use-toast"
-import { Mail, ArrowLeft, Calendar, Plus } from "lucide-react"
-import type { CreateExternalMailRequest, FileResponse } from "@/lib/types"
-import { usePermission } from "@/hooks/usePermission"
-import { format } from "date-fns"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { CreateOrganizationDrawer } from "@/app/dashboard/organizations/create-organization-drawer"
-import { translate } from "../../external-mail.translations"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect";
+import { SearchableResponsibilitySelect } from "@/components/SearchableResponsibilitySelect";
+import { SearchableMailTypeSelect } from "@/components/SearchableMailTypeSelect";
+import { FileUpload } from "@/components/FileUpload";
+import { createExternalMail } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
+import { Mail, ArrowLeft, Calendar, Plus } from "lucide-react";
+import type { CreateExternalMailRequest, FileResponse } from "@/lib/types";
+import { usePermission } from "@/hooks/usePermission";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { CreateOrganizationDrawer } from "@/app/dashboard/organizations/create-organization-drawer";
+import { translate } from "../../external-mail.translations";
 
 export default function CreateOutgoingExternalMailPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const { language } = useLanguage()
-  const hasCreateAccess = usePermission("manager.users.external-mail.create")
-  const [isLoading, setIsLoading] = useState(false)
-  const [sentDate, setSentDate] = useState<Date>(new Date())
-  const [isCreateOrganizationOpen, setIsCreateOrganizationOpen] = useState(false)
+  const router = useRouter();
+  const { toast } = useToast();
+  const { language } = useLanguage();
+  const hasCreateAccess = usePermission("manager.users.external-mail.create");
+  const [isLoading, setIsLoading] = useState(false);
+  const [sentDate, setSentDate] = useState<Date>(new Date());
+  const [isCreateOrganizationOpen, setIsCreateOrganizationOpen] =
+    useState(false);
   const [formData, setFormData] = useState<CreateExternalMailRequest>({
     full_name: "",
     title: "",
@@ -43,7 +54,7 @@ export default function CreateOutgoingExternalMailPage() {
     file_ids: [],
     sent_time: Date.now(),
     internal_registration_code: "",
-  })
+  });
 
   if (!hasCreateAccess) {
     return (
@@ -51,39 +62,47 @@ export default function CreateOutgoingExternalMailPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>{translate("common.accessDenied", language)}</CardTitle>
-            <CardDescription>{translate("common.noPermission", language)}</CardDescription>
+            <CardDescription>
+              {translate("common.noPermission", language)}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
-    )
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       // Validate required fields
       if (!formData.full_name.trim()) {
-        throw new Error(translate("outgoingMails.senderRequired", language))
+        throw new Error(translate("outgoingMails.senderRequired", language));
       }
       if (!formData.title.trim()) {
-        throw new Error(translate("outgoingMails.titleRequired", language))
+        throw new Error(translate("outgoingMails.titleRequired", language));
       }
       if (!formData.organization_id) {
-        throw new Error(translate("outgoingMails.organizationRequired", language))
+        throw new Error(
+          translate("outgoingMails.organizationRequired", language)
+        );
       }
       if (!formData.responsibility_id) {
-        throw new Error(translate("outgoingMails.responsibilityRequired", language))
+        throw new Error(
+          translate("outgoingMails.responsibilityRequired", language)
+        );
       }
       if (!formData.mail_type_id) {
-        throw new Error(translate("outgoingMails.mailTypeRequired", language))
+        throw new Error(translate("outgoingMails.mailTypeRequired", language));
       }
       if (!formData.internal_registration_code.trim()) {
-        throw new Error(translate("outgoingMails.internalNumberRequired", language))
+        throw new Error(
+          translate("outgoingMails.internalNumberRequired", language)
+        );
       }
       if (formData.file_ids.length === 0) {
-        throw new Error(translate("outgoingMails.fileRequired", language))
+        throw new Error(translate("outgoingMails.fileRequired", language));
       }
 
       // Create external mail with selected dates
@@ -91,44 +110,52 @@ export default function CreateOutgoingExternalMailPage() {
         ...formData,
         type: "outbox",
         sent_time: sentDate.getTime(),
-      })
+      });
 
       toast({
         title: translate("common.success", language),
         description: translate("outgoingMails.mailCreated", language),
-      })
-      router.push("/dashboard/external-mail/outgoing")
+      });
+      router.push("/dashboard/external-mail/outgoing");
     } catch (error) {
-      console.error("Error creating outgoing external mail:", error)
+      console.error("Error creating outgoing external mail:", error);
       toast({
         variant: "destructive",
         title: translate("common.error", language),
-        description: error instanceof Error ? error.message : translate("outgoingMails.failedToCreate", language),
-      })
+        description:
+          error instanceof Error
+            ? error.message
+            : translate("outgoingMails.failedToCreate", language),
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleFileUploadSuccess = (files: FileResponse[]) => {
+    console.log(files);
     setFormData((prev) => ({
       ...prev,
-      file_ids: files.map((file) => file.id),
-    }))
-  }
+      file_ids: files,
+    }));
+  };
 
   const handleOrganizationCreated = (newOrganizationId: number) => {
     setFormData((prev) => ({
       ...prev,
       organization_id: newOrganizationId,
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/external-mail/outgoing")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/dashboard/external-mail/outgoing")}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {translate("outgoingMails.backToList", language)}
           </Button>
@@ -140,15 +167,20 @@ export default function CreateOutgoingExternalMailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{translate("outgoingMails.createForm", language)}</CardTitle>
-          <CardDescription>{translate("outgoingMails.fillAllFields", language)}</CardDescription>
+          <CardTitle>
+            {translate("outgoingMails.createForm", language)}
+          </CardTitle>
+          <CardDescription>
+            {translate("outgoingMails.fillAllFields", language)}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="full_name" className="text-sm font-medium">
-                  {translate("outgoingMails.senderFullName", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.senderFullName", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="full_name"
@@ -159,19 +191,25 @@ export default function CreateOutgoingExternalMailPage() {
                       full_name: e.target.value,
                     }))
                   }
-                  placeholder={translate("outgoingMails.senderFullName", language)}
+                  placeholder={translate(
+                    "outgoingMails.senderFullName",
+                    language
+                  )}
                   required
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-medium">
-                  {translate("outgoingMails.title", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.title", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   placeholder={translate("outgoingMails.title", language)}
                   required
                 />
@@ -197,7 +235,8 @@ export default function CreateOutgoingExternalMailPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {translate("outgoingMails.responsibility", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.responsibility", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <SearchableResponsibilitySelect
                   onSelect={(id) =>
@@ -212,7 +251,8 @@ export default function CreateOutgoingExternalMailPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {translate("outgoingMails.organization", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.organization", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <div className="flex-grow">
@@ -226,7 +266,12 @@ export default function CreateOutgoingExternalMailPage() {
                       language={language}
                     />
                   </div>
-                  <Button type="button" variant="outline" size="icon" onClick={() => setIsCreateOrganizationOpen(true)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsCreateOrganizationOpen(true)}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -234,17 +279,26 @@ export default function CreateOutgoingExternalMailPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {translate("outgoingMails.mailType", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.mailType", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <SearchableMailTypeSelect
-                  onSelect={(id) => setFormData((prev) => ({ ...prev, mail_type_id: id || 0 }))}
+                  onSelect={(id) =>
+                    setFormData((prev) => ({ ...prev, mail_type_id: id || 0 }))
+                  }
                   language={language}
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="internal_registration_code" className="text-sm font-medium">
-                  {translate("outgoingMails.internalRegistrationNumber", language)}{" "}
+                <label
+                  htmlFor="internal_registration_code"
+                  className="text-sm font-medium"
+                >
+                  {translate(
+                    "outgoingMails.internalRegistrationNumber",
+                    language
+                  )}{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -256,23 +310,32 @@ export default function CreateOutgoingExternalMailPage() {
                       internal_registration_code: e.target.value,
                     }))
                   }
-                  placeholder={translate("outgoingMails.internalRegistrationNumber", language)}
+                  placeholder={translate(
+                    "outgoingMails.internalRegistrationNumber",
+                    language
+                  )}
                   required
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {translate("outgoingMails.sendDate", language)} <span className="text-red-500">*</span>
+                  {translate("outgoingMails.sendDate", language)}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
                       <Calendar className="mr-2 h-4 w-4" />
                       {sentDate ? (
                         format(sentDate, "PPP")
                       ) : (
-                        <span>{translate("outgoingMails.selectDate", language)}</span>
+                        <span>
+                          {translate("outgoingMails.selectDate", language)}
+                        </span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -290,7 +353,8 @@ export default function CreateOutgoingExternalMailPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {translate("outgoingMails.attachedFiles", language)} <span className="text-red-500">*</span>
+                {translate("outgoingMails.attachedFiles", language)}{" "}
+                <span className="text-red-500">*</span>
               </label>
               <FileUpload
                 onUploadSuccess={handleFileUploadSuccess}
@@ -337,6 +401,5 @@ export default function CreateOutgoingExternalMailPage() {
         onSuccess={handleOrganizationCreated}
       />
     </div>
-  )
+  );
 }
-

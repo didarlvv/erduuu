@@ -1,200 +1,241 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useCallback, useState, useEffect } from "react"
-import { toast } from "sonner"
-import { Upload, X, FileIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { FileWithPreview } from "@/types/files"
+import type * as React from "react";
+import { useCallback, useState } from "react";
+import { Upload, X, FileIcon, AlertCircle, Loader2 } from "lucide-react";
+import { createAuthenticatedAxios } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FileUploadProps {
-  onFileSelect: (files: FileWithPreview[]) => void
-  maxSize?: number // in bytes, default 5MB
-  acceptedTypes?: string[] // e.g. ['image/jpeg', 'image/png']
-  maxFiles?: number // maximum number of files, default 5
+  onUploadSuccess: (fileIds: number[]) => void;
+  value?: number[];
+  multiple?: boolean;
+  required?: boolean;
+  className?: string;
+}
+
+interface UploadedFile {
+  id: number;
+  name: string;
+  original_name: string;
+  size: number;
+  path?: string;
+  created_at?: string;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (
+    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  );
 }
 
 export function FileUpload({
-  onFileSelect,
-  maxSize = 5 * 1024 * 1024,
-  acceptedTypes = ["image/jpeg", "image/png", "application/pdf"],
-  maxFiles = 5,
+  onUploadSuccess,
+  value = [],
+  multiple = true,
+  required = false,
+  className,
 }: FileUploadProps) {
-  const [files, setFiles] = useState<FileWithPreview[]>([])
-  const [dragActive, setDragActive] = useState(false)
-
-  // Cleanup previews on unmount
-  useEffect(() => {
-    return () => {
-      files.forEach((file) => {
-        if (file.preview) {
-          URL.revokeObjectURL(file.preview)
-        }
-      })
-    }
-  }, [files])
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [dragActive, setDragActive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const api = createAuthenticatedAxios();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }, [])
+  }, []);
 
-  const validateFile = useCallback(
-    (file: File): string | null => {
-      if (file.size > maxSize) {
-        return `Файл ${file.name} слишком большой. Максимальный размер: ${(maxSize / (1024 * 1024)).toFixed(1)}MB`
-      }
-      if (!acceptedTypes.includes(file.type)) {
-        return `Файл ${file.name}: неподдерживаемый тип файла`
-      }
-      return null
-    },
-    [maxSize, acceptedTypes],
-  )
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
-  const processFiles = useCallback(
-    (newFiles: File[]) => {
-      if (files.length + newFiles.length > maxFiles) {
-        toast.error(`Максимальное количество файлов: ${maxFiles}`)
-        return
-      }
-
-      const validFiles: FileWithPreview[] = []
-      const errors: string[] = []
-
-      newFiles.forEach((file) => {
-        const error = validateFile(file)
-        if (error) {
-          errors.push(error)
-        } else {
-          const fileWithPreview: FileWithPreview = Object.assign(file, {
-            preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined,
-            id: `${file.name}-${Date.now()}`,
-          })
-          validFiles.push(fileWithPreview)
-        }
-      })
-
-      if (errors.length > 0) {
-        errors.forEach((error) => toast.error(error))
-      }
-
-      if (validFiles.length > 0) {
-        setFiles((prev) => [...prev, ...validFiles])
-        onFileSelect([...files, ...validFiles])
-      }
-    },
-    [files, maxFiles, validateFile, onFileSelect],
-  )
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-
-      const droppedFiles = Array.from(e.dataTransfer.files)
-      if (droppedFiles.length === 0) return
-
-      processFiles(droppedFiles)
-    },
-    [processFiles],
-  )
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selectedFiles = Array.from(e.target.files)
-      processFiles(selectedFiles)
+    const files = Array.from(e.dataTransfer.files);
+    if (files?.length) {
+      handleFiles(files);
     }
-  }
+  }, []);
 
-  const removeFile = (fileId: string) => {
-    setFiles((prev) => {
-      const updatedFiles = prev.filter((f) => f.id !== fileId)
-      onFileSelect(updatedFiles)
-      return updatedFiles
-    })
-  }
+  const handleFiles = async (files: File[]) => {
+    if (!multiple && files.length > 1) {
+      setError("Можно загрузить только один файл");
+      return;
+    }
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
+    try {
+      setIsUploading(true);
+      setError(null);
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const response = await api.post("/manager/files", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const newFiles: UploadedFile[] = response.data.payload.map(
+        (file: any) => ({
+          id: file.id,
+          name: file.name,
+          original_name: file.original_name,
+          size: file.size,
+          path: file.path,
+          created_at: file.created_at,
+        })
+      );
+
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      onUploadSuccess(newFiles.map((file) => file.id));
+
+      toast({
+        title: "Файлы загружены",
+        description: `Успешно загружено файлов: ${newFiles.length}`,
+      });
+    } catch (error) {
+      console.error("Ошибка загрузки файлов:", error);
+      setError("Не удалось загрузить файлы. Пожалуйста, попробуйте снова.");
+      toast({
+        variant: "destructive",
+        title: "Ошибка загрузки",
+        description:
+          "Не удалось загрузить файлы. Пожалуйста, попробуйте снова.",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files?.length) {
+      handleFiles(files);
+    }
+    event.target.value = ""; // Reset input
+  };
+
+  const removeFile = (fileId: number) => {
+    setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
+    onUploadSuccess(
+      uploadedFiles.filter((file) => file.id !== fileId).map((file) => file.id)
+    );
+  };
 
   return (
-    <div className="w-full space-y-4">
+    <div className={cn("space-y-4", className)}>
       <div
         onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
         className={cn(
-          "relative rounded-lg border-2 border-dashed border-gray-300 p-6 transition-all",
-          dragActive && "border-primary bg-primary/5",
-          "hover:border-primary hover:bg-primary/5",
+          "relative border-2 border-dashed rounded-lg p-6 transition-colors",
+          dragActive
+            ? "border-primary bg-primary/5"
+            : "border-muted-foreground/25",
+          isUploading && "opacity-50 cursor-not-allowed"
         )}
       >
         <input
-          id="file-upload"
           type="file"
+          id="file-upload"
+          className="hidden"
           onChange={handleFileChange}
-          disabled={files.length >= maxFiles}
-          accept={acceptedTypes.join(",")}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          multiple
+          multiple={multiple}
+          disabled={isUploading}
+          required={required && uploadedFiles.length === 0}
         />
-
-        <div className="text-center">
-          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-          <div className="mt-4">
-            <p className="text-sm text-gray-600">Перетащите файлы сюда или нажмите для выбора</p>
-            <p className="mt-1 text-xs text-gray-500">
-              {acceptedTypes
-                .join(", ")
-                .replace(/image\//g, "")
-                .replace(/application\//g, "")}
-            </p>
-            <p className="mt-1 text-xs text-gray-500">Максимальный размер файла: {formatFileSize(maxSize)}</p>
-            <p className="mt-1 text-xs text-gray-500">Максимальное количество файлов: {maxFiles}</p>
-          </div>
-        </div>
+        <label
+          htmlFor="file-upload"
+          className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="h-10 w-10 text-muted-foreground animate-spin" />
+              <p className="text-sm text-muted-foreground">
+                Загрузка файлов...
+              </p>
+            </>
+          ) : (
+            <>
+              <Upload className="h-10 w-10 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground text-center">
+                Перетащите файлы сюда или нажмите для выбора
+                {required && <span className="text-destructive">*</span>}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {multiple
+                  ? "Можно загрузить несколько файлов"
+                  : "Можно загрузить только один файл"}
+              </p>
+            </>
+          )}
+        </label>
+        {dragActive && (
+          <div
+            className="absolute inset-0 rounded-lg"
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          />
+        )}
       </div>
 
-      {files.length > 0 && (
-        <div className="rounded-lg border border-gray-200 p-4 space-y-4">
-          <h3 className="font-semibold">Выбранные файлы:</h3>
-          <div className="space-y-2">
-            {files.map((file) => (
-              <div key={file.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-                <div className="flex items-center space-x-3">
-                  <FileIcon className="h-8 w-8 text-blue-500" />
-                  <div>
-                    <p className="text-sm font-medium truncate max-w-[200px]">{file.name}</p>
-                    <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {uploadedFiles.length > 0 && (
+        <div className="space-y-2">
+          {uploadedFiles.map((file) => (
+            <Card key={file.id}>
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <FileIcon className="h-8 w-4 text-muted-foreground" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium truncate max-w-[200px]">
+                      {file.original_name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(file.size)}
+                      {file.name.split(".").pop() &&
+                        ` • ${file.name.split(".").pop()?.toUpperCase()}`}
+                    </span>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => removeFile(file.id)}
-                  className="text-red-500 hover:text-red-700"
-                  title="Удалить файл"
+                  className="text-destructive hover:text-destructive/90"
                 >
                   <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
-  )
+  );
 }
-
