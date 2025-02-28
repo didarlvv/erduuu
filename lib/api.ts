@@ -301,7 +301,6 @@ export async function createExternalMail(
 ): Promise<void> {
   const mailData = {
     ...data,
-    type: "inbox",
   };
   const response = await api.post("/manager/external-mail", mailData);
   if (!response.data) throw new Error("Failed to create external mail");
