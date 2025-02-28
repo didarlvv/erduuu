@@ -1,7 +1,6 @@
 "use client";
 
 import { CardFooter } from "@/components/ui/card";
-
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePermission } from "@/hooks/usePermission";
@@ -17,7 +16,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
@@ -101,7 +99,6 @@ export default function MailDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mailId = searchParams?.get("id");
-  const mailType = searchParams?.get("type") as "inbox" | "sent";
   const { toast } = useToast();
   const { language } = useLanguage();
   const [mailDetail, setMailDetail] =
@@ -112,8 +109,8 @@ export default function MailDetailPage() {
   const hasArchiveAccess = usePermission("manager.users.mails.archive");
 
   const loadMailDetail = useCallback(async () => {
-    if (!mailId || !mailType) {
-      console.error("Mail ID or type is missing");
+    if (!mailId) {
+      console.error("Mail ID is missing");
       router.push("/dashboard/mails/inbox");
       return;
     }
@@ -132,7 +129,7 @@ export default function MailDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [mailId, mailType, language, router, toast]);
+  }, [mailId, language, router, toast]);
 
   useEffect(() => {
     loadMailDetail();
@@ -150,7 +147,7 @@ export default function MailDetailPage() {
           language
         ),
       });
-      router.push(`/dashboard/mails/${mailType}`);
+      router.push("/dashboard/mails/inbox");
     } catch (error) {
       console.error("Failed to archive mail:", error);
       toast({
@@ -164,22 +161,26 @@ export default function MailDetailPage() {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "new":
-        return "default";
+        return "bg-gray-100 text-gray-800";
       case "read":
-        return "secondary";
+        return "bg-blue-100 text-blue-800";
       case "replied":
-        return "secondary";
+        return "bg-green-100 text-green-800";
       case "forwarded":
-        return "secondary";
+        return "bg-yellow-100 text-yellow-800";
       default:
-        return "default";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const renderStatus = (status: string) => (
-    <Badge variant={getStatusBadgeVariant(status)}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeVariant(
+        status
+      )}`}
+    >
       {translate(`mails.status.${status}`, language) || status}
-    </Badge>
+    </span>
   );
 
   const renderFiles = (files: InternalMailDetail["files"]) => (
@@ -290,7 +291,7 @@ export default function MailDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push(`/dashboard/mails/${mailType}`)}>
+            <Button onClick={() => router.push("/dashboard/mails/inbox")}>
               {translate("mails.common.actions.backToList", language)}
             </Button>
           </CardContent>
@@ -306,7 +307,7 @@ export default function MailDetailPage() {
       <div className="flex justify-between items-center">
         <Button
           variant="ghost"
-          onClick={() => router.push(`/dashboard/mails/${mailType}`)}
+          onClick={() => router.push("/dashboard/mails/inbox")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />{" "}
           {translate("mails.common.actions.back", language)}
@@ -373,22 +374,22 @@ export default function MailDetailPage() {
             <span className="font-semibold">
               {translate("mails.detail.fields.recipients", language)}:
             </span>
-            <Badge variant="outline">
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
               {mail.receiver_fullname} (
               {mail.receiver.names.find((n) => n.lang === language)?.name ||
                 mail.receiver.names[0]?.name}
               )
-            </Badge>
+            </span>
           </div>
 
           <div className="flex flex-wrap gap-2 text-sm">
             <span className="font-semibold">
               {translate("mails.detail.fields.mailType", language)}:
             </span>
-            <Badge variant="outline">
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
               {mail.mail_type.names.find((n) => n.lang === language)?.name ||
                 mail.mail_type.names[0]?.name}
-            </Badge>
+            </span>
           </div>
 
           <div className="text-sm">

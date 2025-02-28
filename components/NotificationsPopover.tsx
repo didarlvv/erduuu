@@ -126,7 +126,7 @@ export function NotificationsPopover() {
       notification.type === "internal"
         ? "/dashboard/mails"
         : "/dashboard/external-mail";
-    const detailPath = `${basePath}/detail?id=${notification.id}}`;
+    const detailPath = `${basePath}/detail?id=${notification.id}`;
     router.push(detailPath);
     setIsOpen(false);
   };
