@@ -1,38 +1,33 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { TableWrapper } from "@/components/TableWrapper"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { TableCell, TableRow } from "@/components/ui/table"
+import type React from "react";
+import { TableWrapper } from "@/components/TableWrapper";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import type { InternalMail } from "@/lib/types";
+import { formatDateTime } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import type { InternalMail } from "@/lib/types"
-import Link from "next/link"
-import { MoreHorizontal, Eye, Archive } from "lucide-react"
-import { formatDateCompact } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface InboxMailsTableProps {
-  mails: InternalMail[]
-  total: number
-  currentPage: number
-  pageSize: number
-  onPageChange: (page: number) => void
-  loading: boolean
-  hasNextPage: boolean
-  translate: (key: string, language: string) => string
-  language: string
+  mails: InternalMail[];
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  loading: boolean;
+  hasNextPage: boolean;
+  translate: (key: string, language: string) => string;
+  language: string;
 }
 
 export const InboxMailsTable: React.FC<InboxMailsTableProps> = ({
   mails,
-  total,
   currentPage,
   pageSize,
   onPageChange,
@@ -41,79 +36,80 @@ export const InboxMailsTable: React.FC<InboxMailsTableProps> = ({
   translate,
   language,
 }) => {
-  const router = useRouter()
+  const router = useRouter();
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "new":
-        return "default"
-      case "read":
-        return "secondary"
-      case "replied":
-        return "success"
-      case "forwarded":
-        return "warning"
-      case "archived":
-        return "outline"
+        return "bg-blue-100 text-blue-800";
+      case "progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "answered":
+        return "bg-green-100 text-green-800";
       default:
-        return "secondary"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const columns = [
+    { key: "id", header: "ID" },
     { key: "sender", header: translate("mails.sender", language) },
-    { key: "subject", header: translate("mails.subject", language) },
+    { key: "title", header: translate("mails.subject", language) },
+    { key: "description", header: translate("mails.description", language) },
     { key: "status", header: translate("mails.status", language) },
-    { key: "date", header: translate("mails.date", language) },
-    { key: "actions", header: translate("common.actions", language) },
-  ]
+    { key: "sent_time", header: translate("mails.sentTime", language) },
+    { key: "created_at", header: translate("mails.createdAt", language) },
+    { key: "viewed_at", header: translate("mails.viewedAt", language) },
+  ];
 
   const handleRowClick = (mailId: number) => {
-    router.push(`/dashboard/mails/detail?id=${mailId}&type=inbox`)
-  }
+    router.push(`/dashboard/mails/detail?id=${mailId}&type=inbox`);
+  };
 
   const renderMailRow = (mail: InternalMail) => (
-    <TableRow key={mail.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => handleRowClick(mail.id)}>
-      <TableCell className="font-medium">{mail.sender_fullname}</TableCell>
+    <TableRow
+      key={mail.id}
+      className="hover:bg-muted/50 cursor-pointer"
+      onClick={() => handleRowClick(mail.id)}
+    >
+      <TableCell>{mail.id}</TableCell>
+      <TableCell className="font-medium">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>{mail.sender_fullname}</TooltipTrigger>
+            <TooltipContent>
+              {mail.sender_name
+                .map((name) => `${name.lang}: ${name.name}`)
+                .join(", ")}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableCell>
       <TableCell>{mail.title}</TableCell>
       <TableCell>
-        <Badge variant={getStatusBadgeVariant(mail.status)}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="max-w-xs truncate">
+              {mail.description}
+            </TooltipTrigger>
+            <TooltipContent>{mail.description}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableCell>
+      <TableCell>
+        <Badge variant="outline" className={getStatusBadgeVariant(mail.status)}>
           {translate(`mails.status.${mail.status}`, language) || mail.status}
         </Badge>
       </TableCell>
-      <TableCell>{formatDateCompact(Number(mail.created_at), language)}</TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{translate("common.actions", language)}</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{translate("common.actions", language)}</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/mails/detail?id=${mail.id}&type=inbox`} className="flex items-center">
-                <Eye className="mr-2 h-4 w-4" />
-                <span>{translate("common.view", language)}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Button onClick={() => handleArchive(mail.id)} className="flex items-center w-full">
-                <Archive className="mr-2 h-4 w-4" />
-                <span>{translate("mails.archive", language)}</span>
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <TableCell>{formatDateTime(Number(mail.sent_time), language)}</TableCell>
+      <TableCell>{formatDateTime(Number(mail.created_at), language)}</TableCell>
+      <TableCell>
+        {mail.viewed_at !== "0"
+          ? formatDateTime(Number(mail.viewed_at), language)
+          : translate("mails.notViewed", language)}
       </TableCell>
     </TableRow>
-  )
-
-  const handleArchive = async (mailId: number) => {
-    // Implement archive functionality
-    console.log(`Archiving mail with id: ${mailId}`)
-  }
+  );
 
   return (
     <div className="space-y-4">
@@ -128,36 +124,27 @@ export const InboxMailsTable: React.FC<InboxMailsTableProps> = ({
         }}
       />
 
-      <div className="flex items-center justify-between">
-        <div>
-          {translate("common.showingResults", language, {
-            start: (currentPage - 1) * pageSize + 1,
-            end: Math.min(currentPage * pageSize, total),
-            total,
-          })}
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading}
-          >
-            {translate("common.previous", language)}
-          </Button>
-          <span>
-            {translate("common.page", language, {
-              current: currentPage,
-              total: Math.ceil(total / pageSize),
-            })}
-          </span>
-          <Button variant="outline" onClick={() => onPageChange(currentPage + 1)} disabled={!hasNextPage || loading}>
-            {translate("common.next", language)}
-          </Button>
-        </div>
+      <div className="flex items-center justify-end space-x-2">
+        <Button
+          variant="outline"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1 || loading}
+        >
+          {translate("common.previous", language)}
+        </Button>
+        <span>
+          {translate("common.currentPage", language, { current: currentPage })}
+        </span>
+        <Button
+          variant="outline"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={!hasNextPage || loading}
+        >
+          {translate("common.next", language)}
+        </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default InboxMailsTable
-
+export default InboxMailsTable;

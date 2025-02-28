@@ -225,7 +225,7 @@ export default function SentMailsPage() {
         {hasCreateAccess && (
           <Button
             onClick={() => router.push("/dashboard/mails/create")}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="mr-2 h-4 w-4" />{" "}
             {translate("mails.create", language)}

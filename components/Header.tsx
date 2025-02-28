@@ -1,25 +1,32 @@
-"use client"
-import { useRouter, usePathname } from "next/navigation"
-import type React from "react"
-import { ChevronDown, Phone, Shield, Bell, ChevronLeft, ChevronRight } from "lucide-react"
-import { getUserData } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
-import { useSidebar } from "@/components/Sidebar"
-import { LanguageSelector } from "@/components/LanguageSelector"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { NotificationsPopover } from "@/components/NotificationsPopover"
-import { useState, useEffect } from "react"
-import { fetchMailTypes } from "@/lib/api"
-import Link from "next/link"
-import type { MailType } from "@/types/mail-types"
+"use client";
+import { useRouter, usePathname } from "next/navigation";
+import type React from "react";
+import {
+  ChevronDown,
+  Phone,
+  Shield,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { getUserData } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/Sidebar";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { NotificationsPopover } from "@/components/NotificationsPopover";
+import { useState, useEffect } from "react";
+import { fetchMailTypes } from "@/lib/api";
+import Link from "next/link";
+import type { MailType } from "@/types/mail-types";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 // Local translations
 const translations = {
@@ -92,42 +99,52 @@ const translations = {
     "header.chat": "Chats",
     "header.logs": "Logs",
   },
-}
+};
 
 // Local translate function
 const translate = (key: string, language: string): string => {
-  return translations[language as keyof typeof translations]?.[key] || key
-}
+  return translations[language as keyof typeof translations]?.[key] || key;
+};
 
-const getLocalizedName = (names: { name: string; lang: string }[], lang: string) => {
-  return names.find((n) => n.lang === lang)?.name || ""
-}
+const getLocalizedName = (
+  names: { name: string; lang: string }[],
+  lang: string
+) => {
+  return names.find((n) => n.lang === lang)?.name || "";
+};
 
 type MailTypesButtonsProps = {
-  mailTypes: MailType[]
-  language: string
-}
+  mailTypes: MailType[];
+  language: string;
+};
 
-const MailTypesButtons: React.FC<MailTypesButtonsProps> = ({ mailTypes, language }) => {
+const MailTypesButtons: React.FC<MailTypesButtonsProps> = ({
+  mailTypes,
+  language,
+}) => {
   return (
     <div className="flex space-x-2 overflow-x-auto">
       {mailTypes.map((mailType) => (
         <Button key={mailType.id} variant="ghost" className="whitespace-nowrap">
-          <Link href={`/dashboard/mails/${mailType.slug}`}>{getLocalizedName(mailType.names, language)}</Link>
+          <Link
+            href={`/dashboard/external-mail/incoming?mail-type=${mailType.id}`}
+          >
+            {getLocalizedName(mailType.names, language)}
+          </Link>
         </Button>
       ))}
     </div>
-  )
-}
+  );
+};
 
 export function Header() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const userData = getUserData()
-  const { isOpen, toggleSidebar } = useSidebar()
-  const { language } = useLanguage()
+  const router = useRouter();
+  const pathname = usePathname();
+  const userData = getUserData();
+  const { isOpen, toggleSidebar } = useSidebar();
+  const { language } = useLanguage();
 
-  const [mailTypes, setMailTypes] = useState<MailType[]>([])
+  const [mailTypes, setMailTypes] = useState<MailType[]>([]);
 
   useEffect(() => {
     const loadMainMailTypes = async () => {
@@ -138,26 +155,34 @@ export function Header() {
           order_direction: "ASC",
           skip: 1,
           limit: 1000,
-        })
-        setMailTypes(response.payload)
+        });
+        setMailTypes(response.payload);
       } catch (error) {
-        console.error("Error fetching main mail types:", error)
+        console.error("Error fetching main mail types:", error);
       }
-    }
+    };
 
-    loadMainMailTypes()
-  }, [])
+    loadMainMailTypes();
+  }, []);
 
   const formatPhoneNumber = (phone?: number) => {
-    if (!phone) return "N/A"
-    const phoneStr = phone.toString()
-    return `+993 ${phoneStr.slice(0, 2)} ${phoneStr.slice(2, 5)} ${phoneStr.slice(5)}`
-  }
+    if (!phone) return "N/A";
+    const phoneStr = phone.toString();
+    return `+993 ${phoneStr.slice(0, 2)} ${phoneStr.slice(
+      2,
+      5
+    )} ${phoneStr.slice(5)}`;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="flex h-[88px] items-center px-4">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="mr-4"
+        >
           {isOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
         </Button>
         <div className="flex-1 flex items-center justify-between">
@@ -195,8 +220,12 @@ export function Header() {
                 <div className="px-3 py-2 space-y-3">
                   <div className="flex items-center gap-2 text-sm">
                     <Shield className="h-4 w-4 text-blue-500" />
-                    <span className="text-muted-foreground">{translate("header.position", language)}:</span>
-                    <span className="font-medium ml-auto">{userData?.roles?.[0]?.name ?? "N/A"}</span>
+                    <span className="text-muted-foreground">
+                      {translate("header.position", language)}:
+                    </span>
+                    <span className="font-medium ml-auto">
+                      {userData?.roles?.[0]?.name ?? "N/A"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <div
@@ -205,15 +234,24 @@ export function Header() {
                         "bg-red-500": userData?.status !== "active",
                       })}
                     />
-                    <span className="text-muted-foreground">{translate("header.status", language)}:</span>
+                    <span className="text-muted-foreground">
+                      {translate("header.status", language)}:
+                    </span>
                     <span className="font-medium ml-auto">
-                      {translate(`header.${userData?.status ?? "inactive"}`, language)}
+                      {translate(
+                        `header.${userData?.status ?? "inactive"}`,
+                        language
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-blue-500" />
-                    <span className="text-muted-foreground">{translate("header.phone", language)}:</span>
-                    <span className="font-medium ml-auto">{formatPhoneNumber(userData?.phone)}</span>
+                    <span className="text-muted-foreground">
+                      {translate("header.phone", language)}:
+                    </span>
+                    <span className="font-medium ml-auto">
+                      {formatPhoneNumber(userData?.phone)}
+                    </span>
                   </div>
                 </div>
               </DropdownMenuContent>
@@ -222,6 +260,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

@@ -241,7 +241,23 @@ export async function createMailType(
 export async function fetchInternalSentMails(
   params: InternalMailsQueryParams
 ): Promise<InternalMailsResponse> {
-  const response = await api.get("/mails/sended", { params });
+  const { sender_ids, ...otherParams } = params;
+  let url = "/mails/sended";
+
+  // Формируем строку запроса
+  const queryParams = new URLSearchParams(
+    otherParams as Record<string, string>
+  );
+
+  // Добавляем sender_ids вручную
+  if (sender_ids && sender_ids.length > 0) {
+    sender_ids.forEach((id) => queryParams.append("sender_ids", id.toString()));
+  }
+
+  // Добавляем параметры запроса к URL
+  url += `?${queryParams.toString()}`;
+
+  const response = await api.get(url);
   return response.data;
 }
 
@@ -404,7 +420,7 @@ export async function fetchExternalMailDetail(
 
 export async function proceedExternalMail(id: number): Promise<boolean> {
   try {
-    await api.post(`/manager/external-mail/${id}/proceed`);
+    await api.post(`/manager/external-mail/proceed/${id}`);
     return true;
   } catch (error) {
     console.error("Failed to proceed external mail:", error);

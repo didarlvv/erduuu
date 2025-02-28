@@ -3,7 +3,6 @@
 import type React from "react";
 import { TableWrapper } from "@/components/TableWrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ExternalMail } from "@/lib/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -37,16 +36,12 @@ export const IncomingExternalMailsTable: React.FC<
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "new":
-        return "default";
-      case "replied":
-        return "secondary";
-      case "progress":
-        return "warning";
-      case "answered":
-        return "success";
+      case "proceeded":
+        return "bg-green-100 text-green-800";
+      case "registered":
+        return "bg-blue-100 text-blue-800";
       default:
-        return "secondary";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -107,14 +102,18 @@ export const IncomingExternalMailsTable: React.FC<
         {mail.description}
       </TableCell>
       <TableCell>
-        <Badge variant={getStatusBadgeVariant(mail.status)}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeVariant(
+            mail.status
+          )}`}
+        >
           {translate(
             `incomingMails.status${
               mail.status.charAt(0).toUpperCase() + mail.status.slice(1)
             }`,
             language
           )}
-        </Badge>
+        </span>
       </TableCell>
       <TableCell>
         {formatDateCompact(Number(mail.sent_time), language)}

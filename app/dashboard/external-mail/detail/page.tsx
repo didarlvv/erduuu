@@ -10,6 +10,7 @@ import {
   proceedExternalMail,
   fetchResponsibilitiesWithPermissions,
   downloadFile,
+  archiveExternalMail,
 } from "@/lib/api";
 import type {
   ExternalMailDetail,
@@ -17,7 +18,6 @@ import type {
   ResponsibilitiesResponse,
 } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -91,7 +91,7 @@ const getFileIcon = (fileName: string) => {
 export default function ExternalMailDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mailType = searchParams.get("type") as "incoming" | "outgoing";
+  const mailType = searchParams.get("type") as "incoming" | "outgoing" | null;
   const mailId = searchParams.get("id");
   const { language } = useLanguage();
   const [mail, setMail] = useState<ExternalMailDetail | null>(null);
@@ -109,28 +109,31 @@ export default function ExternalMailDetailPage() {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const { responsibilities } = useResponsibilities();
   const currentResponsibilityId = responsibilities[0];
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const hasAccess = usePermission(`manager.users.external-mail.readone`);
   const hasProceedPermission = usePermission(
-    `manager.users.external-mail.proceed`
+    `manager.users.external-mails.proceed`
   );
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "registered":
-        return "default";
+        return "bg-blue-100 text-blue-800";
+      case "proceeded":
+        return "bg-green-100 text-green-800";
       case "in_progress":
-        return "warning";
+        return "bg-yellow-100 text-yellow-800";
       case "completed":
-        return "success";
+        return "bg-purple-100 text-purple-800";
       default:
-        return "secondary";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   useEffect(() => {
-    if (!mailId || !mailType) {
-      console.error("Mail ID or type is missing");
+    if (!mailId) {
+      console.error("Mail ID is missing");
       router.push("/dashboard");
       return;
     }
@@ -138,11 +141,7 @@ export default function ExternalMailDetailPage() {
     async function loadMail() {
       try {
         setIsLoading(true);
-        const data = await fetchExternalMailDetail(
-          Number(mailId),
-          language,
-          mailType
-        );
+        const data = await fetchExternalMailDetail(Number(mailId), language);
         setMail(data);
       } catch (error) {
         console.error("Error loading mail:", error);
@@ -157,7 +156,7 @@ export default function ExternalMailDetailPage() {
     } else {
       setIsLoading(false);
     }
-  }, [mailId, mailType, hasAccess, router, language]);
+  }, [mailId, hasAccess, router, language]);
 
   useEffect(() => {
     async function loadUsers() {
@@ -215,13 +214,27 @@ export default function ExternalMailDetailPage() {
     if (!mailId) return;
     try {
       setIsProceeding(true);
-      await proceedExternalMail(Number(mailId), mailType);
+      await proceedExternalMail(Number(mailId));
       console.log("Mail proceeded successfully");
       router.refresh();
     } catch (error) {
       console.error("Error proceeding mail:", error);
     } finally {
       setIsProceeding(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!mailId) return;
+    try {
+      setIsArchiving(true);
+      await archiveExternalMail(Number(mailId));
+      console.log("Mail archived successfully");
+      router.refresh();
+    } catch (error) {
+      console.error("Error archiving mail:", error);
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -321,21 +334,37 @@ export default function ExternalMailDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push(`/dashboard/external-mail/${mailType}`)}
+          onClick={() => router.push("/dashboard/external-mail")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />{" "}
           {translate("detail.backToList", language)}
         </Button>
         <div className="flex items-center gap-2">
-          <Badge variant={getStatusBadgeVariant(mail.status)}>
-            {translate(`detail.status.${mail.status}`, language)}
-          </Badge>
-          {hasProceedPermission && (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeVariant(
+              mail?.status || ""
+            )}`}
+          >
+            {translate(`detail.status.${mail?.status || ""}`, language)}
+          </span>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              mail?.is_archived
+                ? "bg-blue-100 text-gray-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {mail?.is_archived
+              ? translate("detail.isArchived", language)
+              : translate("detail.notArchived", language)}
+          </span>
+          {hasProceedPermission && mail?.status !== "proceeded" && (
             <Button
               variant="default"
               size="sm"
               onClick={handleProceed}
               disabled={isProceeding}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
               {isProceeding ? (
                 <div className="flex items-center gap-2">
@@ -344,6 +373,24 @@ export default function ExternalMailDetailPage() {
                 </div>
               ) : (
                 translate("detail.proceed", language)
+              )}
+            </Button>
+          )}
+          {!mail?.is_archived && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleArchive}
+              disabled={isArchiving}
+              className="bg-blue-600 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+            >
+              {isArchiving ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {translate("detail.archiving", language)}
+                </div>
+              ) : (
+                translate("detail.archive", language)
               )}
             </Button>
           )}
@@ -470,136 +517,145 @@ export default function ExternalMailDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-24rem)]">
-        <Card className="lg:col-span-2 flex flex-col overflow-hidden">
-          <CardHeader className="bg-muted">
-            <CardTitle>{translate("detail.chat", language)}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex-grow flex flex-col">
-            <ErrorBoundary
-              fallback={
-                <div className="p-4">
-                  There was an error loading the chat. Please try again later.
-                </div>
-              }
-            >
-              <ScrollArea className="flex-grow p-4">
-                {chatMessages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    className={`mb-4 flex ${
-                      msg.creator_id === userData?.id
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div
-                      className={`max-w-[70%] p-3 rounded-lg shadow ${
-                        msg.creator_id === userData?.id
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-sm">
-                          {msg.fullname}
-                        </span>
-                        <span className="text-xs opacity-70">
-                          {formatDate(Number(msg.created_at), language)}
-                        </span>
-                      </div>
-                      <p className="text-sm break-words">{msg.payload}</p>
-                      {msg.files && msg.files.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {msg.files.map((file, index) => (
-                            <div
-                              key={index}
-                              className="text-xs text-blue-500 underline flex items-center"
-                            >
-                              <PaperclipIcon className="h-3 w-3 mr-1" />
-                              {file.name}
+      <div className="grid grid-cols-1 gap-6 h-[calc(100vh-24rem)]">
+        {mail.type === "inbox" ? (
+          <>
+            <Card className="flex flex-col overflow-hidden">
+              <CardHeader className="bg-muted">
+                <CardTitle>{translate("detail.chat", language)}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex-grow flex flex-col">
+                <ErrorBoundary
+                  fallback={
+                    <div className="p-4">
+                      There was an error loading the chat. Please try again
+                      later.
+                    </div>
+                  }
+                >
+                  <ScrollArea className="flex-grow p-4">
+                    {chatMessages.map((msg) => (
+                      <motion.div
+                        key={msg.id}
+                        className={`mb-4 flex ${
+                          msg.creator_id === userData?.id
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div
+                          className={`max-w-[70%] p-3 rounded-lg shadow ${
+                            msg.creator_id === userData?.id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-secondary"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-sm">
+                              {msg.fullname}
+                            </span>
+                            <span className="text-xs opacity-70">
+                              {formatDate(Number(msg.created_at), language)}
+                            </span>
+                          </div>
+                          <p className="text-sm break-words">{msg.payload}</p>
+                          {msg.files && msg.files.length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              {msg.files.map((file, index) => (
+                                <div
+                                  key={index}
+                                  className="text-xs text-blue-500 underline flex items-center"
+                                >
+                                  <PaperclipIcon className="h-3 w-3 mr-1" />
+                                  {file.name}
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </ScrollArea>
-              <div className="p-4 border-t bg-background">
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={translate("detail.typeMessage", language)}
-                    className="flex-grow"
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  />
-                  <Button size="icon" onClick={handleSendMessage}>
-                    <Send className="h-4 w-4" />
-                    <span className="sr-only">
-                      {translate("detail.sendMessage", language)}
-                    </span>
-                  </Button>
-                </div>
-                {selectedUsers.length > 0 && (
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {translate("detail.selectedUsers", language)}:{" "}
-                    {selectedUsers.length}
-                  </div>
-                )}
-              </div>
-            </ErrorBoundary>
-          </CardContent>
-        </Card>
-        <Card className="flex flex-col overflow-hidden">
-          <CardHeader className="bg-muted">
-            <CardTitle>{translate("detail.users", language)}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex-grow">
-            <ScrollArea className="h-[calc(100vh-36rem)]">
-              <div className="p-4 space-y-4">
-                {allUsers.map((userResp) => (
-                  <motion.div
-                    key={userResp.id}
-                    className="flex items-center p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => toggleUserSelection(userResp.id)}
-                  >
-                    <Checkbox
-                      checked={selectedUsers.includes(userResp.id)}
-                      onCheckedChange={() => toggleUserSelection(userResp.id)}
-                      className="mr-2"
-                    />
-                    <Avatar className="mr-3">
-                      <AvatarImage
-                        src={`https://api.dicebear.com/6.x/initials/svg?seed=${userResp.user.first_name} ${userResp.user.last_name}`}
+                      </motion.div>
+                    ))}
+                  </ScrollArea>
+                  <div className="p-4 border-t bg-background">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="text"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder={translate("detail.typeMessage", language)}
+                        className="flex-grow"
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleSendMessage()
+                        }
                       />
-                      <AvatarFallback>
-                        {userResp.user.first_name?.[0]}
-                        {userResp.user.last_name?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <span className="font-medium block">
-                        {userResp.user.first_name} {userResp.user.last_name}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {userResp.names.find((n) => n.lang === language)
-                          ?.name || userResp.slug}
-                      </span>
+                      <Button size="icon" onClick={handleSendMessage}>
+                        <Send className="h-4 w-4" />
+                        <span className="sr-only">
+                          {translate("detail.sendMessage", language)}
+                        </span>
+                      </Button>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                    {selectedUsers.length > 0 && (
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        {translate("detail.selectedUsers", language)}:{" "}
+                        {selectedUsers.length}
+                      </div>
+                    )}
+                  </div>
+                </ErrorBoundary>
+              </CardContent>
+            </Card>
+            <Card className="flex flex-col overflow-hidden">
+              <CardHeader className="bg-muted">
+                <CardTitle>{translate("detail.users", language)}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex-grow">
+                <ScrollArea className="h-[calc(100vh-36rem)]">
+                  <div className="p-4 space-y-4">
+                    {allUsers.map((userResp) => (
+                      <motion.div
+                        key={userResp.id}
+                        className="flex items-center p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleUserSelection(userResp.id)}
+                      >
+                        <Checkbox
+                          checked={selectedUsers.includes(userResp.id)}
+                          onCheckedChange={() =>
+                            toggleUserSelection(userResp.id)
+                          }
+                          className="mr-2"
+                        />
+                        <Avatar className="mr-3">
+                          <AvatarImage
+                            src={`https://api.dicebear.com/6.x/initials/svg?seed=${userResp.user.first_name} ${userResp.user.last_name}`}
+                          />
+                          <AvatarFallback>
+                            {userResp.user.first_name?.[0]}
+                            {userResp.user.last_name?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <span className="font-medium block">
+                            {userResp.user.first_name} {userResp.user.last_name}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {userResp.names.find((n) => n.lang === language)
+                              ?.name || userResp.slug}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
       </div>
     </div>
   );

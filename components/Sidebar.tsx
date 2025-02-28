@@ -113,7 +113,7 @@ const menuItems = [
   {
     icon: Archive,
     labelKey: "archive",
-    permission: "manager.users.archive.readall",
+    permission: "",
     items: [
       {
         labelKey: "externalOutgoing",
@@ -247,10 +247,10 @@ const translations = {
     "sidebar.mailTypes": "Hat görnüşleri",
     "sidebar.permissions": "Rugsatlar",
     "sidebar.files": "Faýllar",
-    "sidebar.externalMail": "Daşary hatlar",
+    "sidebar.externalMail": "Daşky hatlar",
     "sidebar.internalMail": "Içerki hatlar",
-    "sidebar.sent": "Iberildi",
-    "sidebar.inbox": "Gelen hatlar",
+    "sidebar.sent": "Çykyş",
+    "sidebar.inbox": "Giriş",
     "sidebar.create": "Döretmek",
     "sidebar.mails": "Hatlar",
     "sidebar.externalLines": "Daşarky liniýalar",
@@ -264,8 +264,8 @@ const translations = {
     "sidebar.ministryName1": "Türkmenistanyň",
     "sidebar.ministryName2": "Energetika ministrligi",
     "sidebar.projectVersion": "Sanly dolanşyk v1.00",
-    "sidebar.outgoing": "Gidýän",
-    "sidebar.incoming": "Gelýän",
+    "sidebar.outgoing": "Çykyş",
+    "sidebar.incoming": "Giriş",
     "sidebar.chats": "Çatlar",
     "sidebar.externalOutgoing": "Gidýän daşary hatlar",
     "sidebar.externalIncoming": "Gelýän daşary hatlar",

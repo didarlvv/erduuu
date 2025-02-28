@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { fetchSpecialMails } from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search, Mail, Users, ArrowRight, Bell } from "lucide-react"
-import type { SpecialMail } from "@/types/special-mails"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { fetchSpecialMails } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Mail, Users, ArrowRight, Bell } from "lucide-react";
+import type { SpecialMail } from "@/types/special-mails";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const translations = {
   ru: {
@@ -20,7 +20,7 @@ const translations = {
     specialMails: "Специальные письма",
     searchMails: "Поиск писем...",
     search: "Поиск",
-    loadError: "Не удалось загру��ить письма. Пожалуйста, попробуйте позже.",
+    loadError: "Не удалось загруэить письма. Пожалуйста, попробуйте позже.",
     createdBy: "Создал",
     members: "Участники",
     noMails: "Писем не найдено",
@@ -54,24 +54,28 @@ const translations = {
     external: "External",
     unreadMessages: "unread",
   },
-}
+};
 
 const translate = (key: string, language: string): string => {
-  return translations[language as keyof typeof translations][key as keyof (typeof translations)["en"]] || key
-}
+  return (
+    translations[language as keyof typeof translations][
+      key as keyof (typeof translations)["en"]
+    ] || key
+  );
+};
 
 export default function DashboardPage() {
-  const [mails, setMails] = useState<SpecialMail[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const { language } = useLanguage()
-  const router = useRouter()
+  const [mails, setMails] = useState<SpecialMail[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const router = useRouter();
 
   const loadMails = useCallback(
     async (search = "") => {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await fetchSpecialMails({
           search,
@@ -80,34 +84,39 @@ export default function DashboardPage() {
           limit: 10,
           lang: language,
           locals: [], // Initialize with empty locals array as per API spec
-        })
-        setMails(response.payload)
+        });
+        setMails(response.payload);
       } catch (err) {
-        setError(translate("loadError", language))
+        setError(translate("loadError", language));
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     },
-    [language],
-  )
+    [language]
+  );
 
   useEffect(() => {
-    loadMails()
-  }, [loadMails])
+    loadMails();
+  }, [loadMails]);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    loadMails(searchTerm)
-  }
+    e.preventDefault();
+    loadMails(searchTerm);
+  };
 
   const handleMailClick = (mail: SpecialMail) => {
-    const basePath = mail.reference === "internal" ? "/dashboard/mails" : "/dashboard/external-mail/incoming"
-    router.push(`${basePath}/${mail.mail_id}`)
-  }
+    const basePath =
+      mail.reference === "internal"
+        ? "/dashboard/mails/detail"
+        : "/dashboard/external-mail/detail";
+    router.push(`${basePath}?id=${mail.mail_id}`);
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <h1 className="text-3xl font-semibold text-gray-900">{translate("dashboard", language)}</h1>
+      <h1 className="text-3xl font-semibold text-gray-900">
+        {translate("dashboard", language)}
+      </h1>
 
       <Card>
         <CardHeader>
@@ -133,7 +142,9 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {error ? (
-            <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg">{error}</div>
+            <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg">
+              {error}
+            </div>
           ) : (
             <div className="space-y-4">
               {isLoading ? (
@@ -144,7 +155,9 @@ export default function DashboardPage() {
                   </Card>
                 ))
               ) : mails.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">{translate("noMails", language)}</div>
+                <div className="text-center text-muted-foreground py-8">
+                  {translate("noMails", language)}
+                </div>
               ) : (
                 mails.map((mail) => (
                   <Card
@@ -160,24 +173,35 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
                           <Users className="h-3 w-3" />
                           <span>
                             {mail.member_count} {translate("members", language)}
                           </span>
                         </Badge>
                         <Badge
-                          variant={mail.reference === "external" ? "secondary" : "default"}
+                          variant={
+                            mail.reference === "external"
+                              ? "secondary"
+                              : "default"
+                          }
                           className="flex items-center gap-1"
                         >
                           <Mail className="h-3 w-3" />
                           <span>{translate(mail.reference, language)}</span>
                         </Badge>
                         {mail.unread_count > 0 && (
-                          <Badge variant="default" className="bg-blue-500 flex items-center gap-1">
+                          <Badge
+                            variant="default"
+                            className="bg-blue-500 flex items-center gap-1"
+                          >
                             <Bell className="h-3 w-3" />
                             <span>
-                              {mail.unread_count} {translate("unreadMessages", language)}
+                              {mail.unread_count}{" "}
+                              {translate("unreadMessages", language)}
                             </span>
                           </Badge>
                         )}
@@ -192,6 +216,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
