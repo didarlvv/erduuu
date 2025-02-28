@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { LoginForm } from "@/components/LoginForm"
-import { LanguageSelector } from "@/components/LanguageSelector"
-import { Card, CardContent } from "@/components/ui/card"
-import { useLanguage } from "@/contexts/LanguageContext"
+import Image from "next/image";
+import { LoginForm } from "@/components/LoginForm";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const translations = {
   ru: {
@@ -17,6 +17,7 @@ const translations = {
       login: "Вход в систему",
       loginDescription: "Введите свои учетные данные для входа в систему",
     },
+    projectName: "Sanly dolanşyk v1.00",
   },
   tk: {
     sidebar: {
@@ -28,6 +29,7 @@ const translations = {
       login: "Ulgama giriş",
       loginDescription: "Ulgama girmek üçin hasap maglumatlaryňyzy giriziň",
     },
+    projectName: "Sanly dolanşyk v1.00",
   },
   en: {
     sidebar: {
@@ -39,24 +41,25 @@ const translations = {
       login: "System Login",
       loginDescription: "Enter your credentials to access the system",
     },
+    projectName: "Sanly dolanşyk v1.00",
   },
-}
+};
 
 function translate(key: string, language: string): string {
-  const keys = key.split(".")
-  let result: any = translations[language as keyof typeof translations]
+  const keys = key.split(".");
+  let result: any = translations[language as keyof typeof translations];
   for (const k of keys) {
     if (result && result[k]) {
-      result = result[k]
+      result = result[k];
     } else {
-      return key // Return the key if translation is not found
+      return key; // Return the key if translation is not found
     }
   }
-  return result as string
+  return result as string;
 }
 
 export default function LoginPage() {
-  const { language } = useLanguage()
+  const { language } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col w-screen absolute top-0 right-0">
@@ -82,6 +85,9 @@ export default function LoginPage() {
                 <h2 className="text-2xl font-bold text-gray-900 text-center tracking-tight">
                   {translate("sidebar.ministryName2", language)}
                 </h2>
+                <p className="mt-2 text-lg text-blue-600 font-semibold text-center">
+                  {translate("projectName", language)}
+                </p>
               </div>
             </div>
             <div className="p-8 pt-6">
@@ -99,6 +105,5 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-

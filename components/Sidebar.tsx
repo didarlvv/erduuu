@@ -1,5 +1,11 @@
 "use client";
-import { useState, createContext, useContext, type ReactNode } from "react";
+import {
+  useState,
+  createContext,
+  useContext,
+  type ReactNode,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -52,7 +58,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logo from "@/public/energo.png";
 
 const SidebarContext = createContext<{
   isOpen: boolean;
@@ -221,7 +226,7 @@ const translations = {
     "sidebar.ministryLogo": "Министерство энергетики Туркменистана",
     "sidebar.ministryName1": "Türkmenistanyň",
     "sidebar.ministryName2": "Energetika ministrligi",
-    "sidebar.systemVersion": "Версия системы",
+    "sidebar.projectVersion": "Sanly dolanşyk v1.00",
     "sidebar.outgoing": "Исходящие",
     "sidebar.incoming": "Входящие",
     "sidebar.chats": "Чаты",
@@ -231,6 +236,7 @@ const translations = {
     "sidebar.internalIncoming": "Входящие внутренние письма",
     "sidebar.logs": "Логи",
     "sidebar.manager": "Менеджер",
+    "sidebar.projectName": "Sanly dolanşyk v1.00",
   },
   tk: {
     "sidebar.dashboard": "Baş sahypa",
@@ -257,7 +263,7 @@ const translations = {
     "sidebar.ministryLogo": "Türkmenistanyň Energetika ministrligi",
     "sidebar.ministryName1": "Türkmenistanyň",
     "sidebar.ministryName2": "Energetika ministrligi",
-    "sidebar.systemVersion": "Ulgamyň wersiýasy",
+    "sidebar.projectVersion": "Sanly dolanşyk v1.00",
     "sidebar.outgoing": "Gidýän",
     "sidebar.incoming": "Gelýän",
     "sidebar.chats": "Çatlar",
@@ -267,6 +273,7 @@ const translations = {
     "sidebar.internalIncoming": "Gelýän içerki hatlar",
     "sidebar.logs": "Loglar",
     "sidebar.manager": "Dolandyryjy",
+    "sidebar.projectName": "Sanly dolanşyk v1.00",
   },
   en: {
     "sidebar.dashboard": "Dashboard",
@@ -293,7 +300,7 @@ const translations = {
     "sidebar.ministryLogo": "Ministry of Energy of Turkmenistan",
     "sidebar.ministryName1": "Ministry of Energy",
     "sidebar.ministryName2": "of Turkmenistan",
-    "sidebar.systemVersion": "System version",
+    "sidebar.projectVersion": "Sanly dolanşyk v1.00",
     "sidebar.outgoing": "Outgoing",
     "sidebar.incoming": "Incoming",
     "sidebar.chats": "Chats",
@@ -303,6 +310,7 @@ const translations = {
     "sidebar.internalIncoming": "Incoming Internal Mail",
     "sidebar.logs": "Logs",
     "sidebar.manager": "Manager",
+    "sidebar.projectName": "Sanly dolanşyk v1.00",
   },
 };
 
@@ -327,9 +335,16 @@ export function Sidebar() {
   const router = useRouter();
   const { language } = useLanguage();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const permissions = menuItems.map((item) => {
-    return item.permission ? usePermission(item.permission) : true;
-  });
+  const [permissions, setPermissions] = useState<boolean[]>([]);
+  const [hasPermissionsLoaded, setHasPermissionsLoaded] = useState(false);
+
+  useEffect(() => {
+    const calculatedPermissions = menuItems.map((item) => {
+      return item.permission ? usePermission(item.permission) : true;
+    });
+    setPermissions(calculatedPermissions);
+    setHasPermissionsLoaded(true);
+  }, []);
   const { language: currentLanguage } = useLanguage();
 
   const LogoutButton = () => {
@@ -419,7 +434,7 @@ export function Sidebar() {
               )}
             >
               <Image
-                src={logo}
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-wjTnDDr5vGt6haZTkljVCbMMF60pP6.png"
                 alt={translate("sidebar.ministryLogo", language)}
                 width={isOpen ? 56 : 48}
                 height={isOpen ? 56 : 48}
@@ -441,7 +456,9 @@ export function Sidebar() {
 
         <nav className="flex-1 overflow-y-auto py-6 px-4">
           {menuItems.map((item, index) => {
-            const hasPermission = permissions[index];
+            const hasPermission = hasPermissionsLoaded
+              ? permissions[index]
+              : false;
 
             if (!hasPermission) {
               return null;
@@ -568,7 +585,7 @@ export function Sidebar() {
             <>
               <LogoutButton />
               <div className="mt-4 text-xs text-gray-500 px-4">
-                {translate("sidebar.systemVersion", language)} v1.0.0
+                {translate("sidebar.projectVersion", language)}
               </div>
             </>
           ) : (

@@ -109,6 +109,7 @@ export default function SentMailsPage() {
     try {
       setIsLoading(true);
       const sender_ids = detailedResponsibilities?.map((resp) => resp.id) ?? [];
+      console.log(detailedResponsibilities);
       const response: InternalMailsResponse = await fetchInternalSentMails({
         skip: currentPage,
         limit: filters.limit,

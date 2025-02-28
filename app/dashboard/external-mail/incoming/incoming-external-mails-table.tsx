@@ -5,18 +5,9 @@ import { TableWrapper } from "@/components/TableWrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { ExternalMail } from "@/lib/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translate } from "../external-mail.translations";
-import Link from "next/link";
-import { MoreHorizontal, Eye, Pencil } from "lucide-react";
 import { formatDateCompact } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -77,28 +68,19 @@ export const IncomingExternalMailsTable: React.FC<
       header: translate("incomingMails.description", language),
     },
     { key: "status", header: translate("incomingMails.status", language) },
-    {
-      key: "createdAt",
-      header: translate("incomingMails.createdAt", language),
-    },
     { key: "sentTime", header: translate("incomingMails.sentTime", language) },
     {
       key: "receivedTime",
       header: translate("incomingMails.receivedTime", language),
     },
     {
-      key: "externalRegistrationCode",
-      header: translate("incomingMails.externalRegistrationCode", language),
-    },
-    {
-      key: "internalRegistrationCode",
-      header: translate("incomingMails.internalRegistrationCode", language),
+      key: "registrationCodes",
+      header: translate("incomingMails.registrationCodes", language),
     },
     {
       key: "organization",
       header: translate("incomingMails.organization", language),
     },
-    { key: "actions", header: translate("common.actions", language) },
   ];
 
   const handleRowClick = (mailId: string) => {
@@ -135,54 +117,28 @@ export const IncomingExternalMailsTable: React.FC<
         </Badge>
       </TableCell>
       <TableCell>
-        {formatDateCompact(Number(mail.created_at), language)}
-      </TableCell>
-      <TableCell>
         {formatDateCompact(Number(mail.sent_time), language)}
       </TableCell>
       <TableCell>
         {formatDateCompact(Number(mail.received_time), language)}
       </TableCell>
-      <TableCell>{mail.external_registration_code || "-"}</TableCell>
-      <TableCell>{mail.internal_registration_code}</TableCell>
+      <TableCell>
+        <div>
+          <span className="font-medium">
+            {translate("common.external", language)}:{" "}
+          </span>
+          {mail.external_registration_code || "-"}
+        </div>
+        <div>
+          <span className="font-medium">
+            {translate("common.internal", language)}:{" "}
+          </span>
+          {mail.internal_registration_code}
+        </div>
+      </TableCell>
       <TableCell>
         {mail.organization.names.find((n) => n.lang === language)?.name ||
           mail.organization.slug}
-      </TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">
-                {translate("common.openMenu", language)}
-              </span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuLabel>
-              {translate("common.actions", language)}
-            </DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/dashboard/external-mail/detail?id=${mail.id}&type=incoming`}
-                className="flex items-center"
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                <span>{translate("common.view", language)}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/dashboard/external-mail/detail?id=${mail.id}&type=incoming&mode=edit`}
-                className="flex items-center"
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                <span>{translate("common.edit", language)}</span>
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </TableCell>
     </TableRow>
   );
@@ -203,36 +159,26 @@ export const IncomingExternalMailsTable: React.FC<
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          {translate("common.showing", language)}{" "}
-          {(currentPage - 1) * pageSize + 1} {translate("common.to", language)}{" "}
-          {Math.min(currentPage * pageSize, total)}{" "}
-          {translate("common.of", language)} {total}{" "}
-          {translate("common.results", language)}
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading}
-          >
-            {translate("common.previous", language)}
-          </Button>
-          <div className="text-sm">
-            {translate("common.page", language)} {currentPage}{" "}
-            {translate("common.of", language)} {Math.ceil(total / pageSize)}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={!hasNextPage || loading}
-          >
-            {translate("common.next", language)}
-          </Button>
-        </div>
+      <div className="flex items-center justify-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1 || loading}
+        >
+          {translate("common.previous", language)}
+        </Button>
+        <span className="text-sm font-medium">
+          {translate("common.page", language)} {currentPage}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={!hasNextPage || loading}
+        >
+          {translate("common.next", language)}
+        </Button>
       </div>
     </div>
   );
