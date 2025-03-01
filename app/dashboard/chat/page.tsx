@@ -16,16 +16,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, Wifi, WifiOff, CornerUpLeft, Paperclip, X } from "lucide-react";
+import {
+  Send,
+  Wifi,
+  WifiOff,
+  CornerUpLeft,
+  X,
+  PaperclipIcon,
+} from "lucide-react";
 import { fetchChatUsers } from "@/lib/api";
 import type { ChatUser } from "@/lib/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { chatTranslations } from "./chat.translations";
-import { FileUpload } from "@/components/FileUpload";
 import type { FileWithPreview } from "@/types/files";
-import { FileIcon } from "lucide-react";
 import { useNotification } from "@/contexts/NotificationContext";
 import { toast } from "react-toastify";
+import { CompactFileUpload } from "@/components/CompactFileUpload";
 
 interface Message {
   id: string;
@@ -90,7 +96,7 @@ export default function ChatPage() {
   );
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
-  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { addNotification } = useNotification();
 
   const translate = useCallback(
@@ -114,7 +120,7 @@ export default function ChatPage() {
       const usersWithUnreadCount = response.payload.data.map(
         (user: ChatUser) => ({
           ...user,
-          unreadCount: 0, // Здесь мы должны получать реальное количество непрочитанных сообщений с сервера
+          unreadCount: 0, // В реальном приложении это значение должно приходить с сервера
         })
       );
       setUsers(usersWithUnreadCount);
@@ -203,7 +209,7 @@ export default function ChatPage() {
                 setUsers((prevUsers) =>
                   prevUsers.map((user) =>
                     user.id === newMsg.sender_id
-                      ? { ...user, unreadCount: user.unreadCount + 1 }
+                      ? { ...user, unreadCount: (user.unreadCount || 0) + 1 }
                       : user
                   )
                 );
@@ -412,9 +418,16 @@ export default function ChatPage() {
     setReplyingTo(message);
   };
 
-  const handleFileSelect = (files: FileWithPreview[]) => {
-    setSelectedFiles(files);
-    setShowFileUpload(false);
+  const handleFileUpload = (fileIds: number[]) => {
+    console.log("Handling file upload:", fileIds);
+    // Здесь мы должны получить имена файлов с сервера
+    // Для примера, мы просто используем ID как имя
+    const newFiles = fileIds.map((id) => ({
+      id: id.toString(),
+      name: `File ${id}`,
+      preview: "",
+    }));
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   const removeSelectedFile = (fileId: string) => {
@@ -475,10 +488,15 @@ export default function ChatPage() {
             {message.files && message.files.length > 0 && (
               <div className="mt-2 space-y-1">
                 {message.files.map((file) => (
-                  <div key={file.id} className="flex items-center space-x-2">
-                    <FileIcon className="h-4 w-4" />
-                    <span className="text-xs">{file.name}</span>
-                  </div>
+                  <a
+                    key={file.id}
+                    href={`/api/files/${file.id}`}
+                    download={file.name}
+                    className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <PaperclipIcon className="h-3.5 w-3.5" />
+                    <span>{file.name}</span>
+                  </a>
                 ))}
               </div>
             )}
@@ -508,7 +526,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-140px)] gap-4">
+    <div className="flex h-[calc(100vh-200px)] gap-4">
       <div className="fixed top-4 right-4 z-50">
         {isConnected ? (
           <Badge variant="secondary" className="gap-1">
@@ -665,11 +683,6 @@ export default function ChatPage() {
                 </Button>
               </div>
             )}
-            {showFileUpload && (
-              <div className="mb-4">
-                <FileUpload onFileSelect={handleFileSelect} />
-              </div>
-            )}
             {selectedFiles.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
                 {selectedFiles.map((file) => (
@@ -704,17 +717,26 @@ export default function ChatPage() {
                 placeholder={translate("enterMessage")}
                 className="flex-1"
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => setShowFileUpload(!showFileUpload)}
-              >
-                <Paperclip className="h-4 w-4" />
-              </Button>
+              <CompactFileUpload
+                onUploadSuccess={(fileIds) => {
+                  console.log("Files uploaded successfully:", fileIds);
+                  handleFileUpload(fileIds);
+                }}
+                onUploadStart={() => {
+                  console.log("File upload started");
+                  setIsUploading(true);
+                }}
+                onUploadEnd={() => {
+                  console.log("File upload ended");
+                  setIsUploading(false);
+                }}
+              />
               <Button
                 type="submit"
-                disabled={!newMessage.trim() && selectedFiles.length === 0}
+                disabled={
+                  (!newMessage.trim() && selectedFiles.length === 0) ||
+                  isUploading
+                }
               >
                 <Send className="h-4 w-4" />
               </Button>

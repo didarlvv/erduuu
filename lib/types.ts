@@ -163,6 +163,7 @@ export interface CreateInternalMailResponse {
   timestamp: number;
 }
 
+// Update the InternalMailDetail interface
 export interface InternalMailDetail {
   id: number;
   code: string;

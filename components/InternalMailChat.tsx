@@ -11,10 +11,10 @@ import { motion } from "framer-motion";
 import { ErrorBoundary } from "react-error-boundary";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSocket } from "@/hooks/useSocket";
-import { translate } from "@/app/dashboard/external-mail/external-mail.translations";
+import { translate } from "@/app/dashboard/mails/mail.translations";
 import { getUserData } from "@/lib/auth";
 import { formatDateCompact } from "@/lib/utils";
-import type { ExternalMailDetail, ResponsibilitiesResponse } from "@/lib/types";
+import type { InternalMailDetail, ResponsibilitiesResponse } from "@/lib/types";
 import { fetchResponsibilitiesWithPermissions } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 import { CompactFileUpload } from "@/components/CompactFileUpload";
@@ -26,15 +26,15 @@ interface ExtendedChatMessage extends ChatMessage {
   files?: Array<{ name: string }>;
 }
 
-interface ExternalMailChatProps {
-  mail: ExternalMailDetail;
+interface InternalMailChatProps {
+  mail: InternalMailDetail;
   currentResponsibilityId: number;
 }
 
-export function ExternalMailChat({
+export function InternalMailChat({
   mail,
   currentResponsibilityId,
-}: ExternalMailChatProps) {
+}: InternalMailChatProps) {
   const { language } = useLanguage();
   const [chatMessages, setChatMessages] = useState<ExtendedChatMessage[]>([]);
   const [messageText, setMessageText] = useState("");
@@ -69,7 +69,7 @@ export function ExternalMailChat({
   useEffect(() => {
     if (isConnected && mail) {
       emitRoomMessages({
-        reference: "external",
+        reference: "internal",
         mail_id: mail.id,
       });
     }
@@ -129,7 +129,7 @@ export function ExternalMailChat({
     if (messageText.trim() && mail) {
       const messageData: any = {
         payload: messageText,
-        reference: "external",
+        reference: "internal",
         mail_id: mail.id,
       };
 
@@ -146,7 +146,6 @@ export function ExternalMailChat({
       setSelectedUsers([]);
       setUploadedFiles([]);
 
-      // Прокрутка чата вниз после отправки сообщения
       if (messagesContainerRef.current) {
         setTimeout(() => {
           if (messagesContainerRef.current) {
@@ -160,8 +159,6 @@ export function ExternalMailChat({
 
   const handleFileUpload = (fileIds: number[]) => {
     console.log("Handling file upload:", fileIds);
-    // Здесь мы должны получить имена файлов с сервера
-    // Для примера, мы просто используем ID как имя
     const newFiles = fileIds.map((id) => ({ id, name: `File ${id}` }));
     setUploadedFiles((prev) => [...prev, ...newFiles]);
   };
@@ -174,7 +171,7 @@ export function ExternalMailChat({
     <div className="flex gap-6 h-[calc(100vh-200px)]">
       <Card className="flex-grow flex flex-col overflow-hidden">
         <CardHeader className="bg-muted">
-          <CardTitle>{translate("detail.chat", language)}</CardTitle>
+          <CardTitle>{translate("mails.detail.chat", language)}</CardTitle>
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden p-0">
           <ErrorBoundary
@@ -301,7 +298,10 @@ export function ExternalMailChat({
                     type="text"
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={translate("detail.typeMessage", language)}
+                    placeholder={translate(
+                      "mails.detail.typeMessage",
+                      language
+                    )}
                     className="flex-grow"
                     onKeyPress={(e) =>
                       e.key === "Enter" && !isUploading && handleSendMessage()
@@ -328,7 +328,7 @@ export function ExternalMailChat({
                   >
                     <Send className="h-4 w-4" />
                     <span className="sr-only">
-                      {translate("detail.sendMessage", language)}
+                      {translate("mails.detail.sendMessage", language)}
                     </span>
                   </Button>
                 </div>
@@ -345,7 +345,7 @@ export function ExternalMailChat({
       </Card>
       <Card className="w-1/3 flex flex-col overflow-hidden">
         <CardHeader className="bg-muted">
-          <CardTitle>{translate("detail.users", language)}</CardTitle>
+          <CardTitle>{translate("mails.detail.users", language)}</CardTitle>
         </CardHeader>
         <CardContent className="flex-grow p-0 overflow-hidden">
           <div className="h-full overflow-y-auto">

@@ -1,289 +1,163 @@
 "use client";
 
 import { CardFooter } from "@/components/ui/card";
-import { useEffect, useState, useCallback } from "react";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePermission } from "@/hooks/usePermission";
+import { useSocket } from "@/hooks/useSocket";
 import {
   fetchInternalMailDetail,
   archiveInternalMail,
   unarchiveInternalMail,
+  downloadFile,
 } from "@/lib/api";
-import type {
-  InternalMailDetail,
-  InternalMailDetailResponse,
-} from "@/lib/types";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import type { InternalMailDetail } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
 import {
-  ArrowLeft,
-  Archive,
-  Forward,
-  Reply,
-  FileIcon,
-  Download,
   FileText,
-  Image,
-  Film,
-  Music,
-  ArchiveIcon,
+  User,
+  Download,
+  ArrowLeft,
+  FileIcon,
+  ImageIcon,
+  FileVideoIcon,
+  FileAudioIcon,
+  FileSpreadsheetIcon,
+  FileIcon as FilePresentationIcon,
+  FileArchiveIcon,
+  Wifi,
+  WifiOff,
+  Archive,
+  Reply,
+  Clock,
+  Eye,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { mailTranslations } from "../mail.translations";
-import { formatDate, formatFileSize } from "@/lib/utils";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-const translate = (
-  key: string,
-  language: string,
-  params: Record<string, string | number> = {}
-): string => {
-  const keys = key.split(".");
-  let translation: any =
-    mailTranslations[language as keyof typeof mailTranslations];
-  for (const k of keys) {
-    if (translation[k] === undefined) {
-      return key;
-    }
-    translation = translation[k];
-  }
-  if (typeof translation === "string") {
-    return Object.entries(params).reduce(
-      (str, [key, value]) =>
-        str.replace(new RegExp(`{${key}}`, "g"), String(value)),
-      translation
-    );
-  }
-  return key;
-};
+import { translate } from "../mail.translations";
+import { formatDate } from "@/lib/utils";
+import { InternalMailChat } from "@/components/InternalMailChat";
 
 const getFileIcon = (fileName: string) => {
-  const extension = fileName.split(".").pop()?.toLowerCase();
+  const extension = fileName.split(".").pop()?.toLowerCase() || "";
   switch (extension) {
-    case "pdf":
-    case "doc":
-    case "docx":
-    case "txt":
-      return <FileText className="h-6 w-6" />;
     case "jpg":
     case "jpeg":
     case "png":
     case "gif":
-      return <Image className="h-6 w-6" />;
+    case "bmp":
+    case "svg":
+      return <ImageIcon className="h-12 w-12 text-primary" />;
     case "mp4":
     case "avi":
     case "mov":
-      return <Film className="h-6 w-6" />;
+    case "wmv":
+      return <FileVideoIcon className="h-12 w-12 text-primary" />;
     case "mp3":
     case "wav":
-      return <Music className="h-6 w-6" />;
+    case "ogg":
+      return <FileAudioIcon className="h-12 w-12 text-primary" />;
+    case "xls":
+    case "xlsx":
+    case "csv":
+      return <FileSpreadsheetIcon className="h-12 w-12 text-primary" />;
+    case "ppt":
+    case "pptx":
+      return <FilePresentationIcon className="h-12 w-12 text-primary" />;
     case "zip":
     case "rar":
-      return <ArchiveIcon className="h-6 w-6" />;
+    case "7z":
+      return <FileArchiveIcon className="h-12 w-12 text-primary" />;
+    case "pdf":
+    case "doc":
+    case "docx":
+    case "txt":
     default:
-      return <FileIcon className="h-6 w-6" />;
+      return <FileIcon className="h-12 w-12 text-primary" />;
   }
 };
 
-export default function MailDetailPage() {
+export default function InternalMailDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mailId = searchParams?.get("id");
-  const { toast } = useToast();
+  const mailId = searchParams.get("id");
   const { language } = useLanguage();
-  const [mailDetail, setMailDetail] =
-    useState<InternalMailDetailResponse | null>(null);
+  const [mail, setMail] = useState<InternalMailDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const { isConnected } = useSocket();
 
-  const hasReadAccess = usePermission("manager.users.mails.readone");
-  const hasArchiveAccess = usePermission("manager.users.mails.archive");
+  const hasReadAccess = usePermission(`manager.users.mails.readone`);
 
-  const loadMailDetail = useCallback(async () => {
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "new":
+        return "bg-blue-100 text-blue-800";
+      case "progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "answered":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  useEffect(() => {
     if (!mailId) {
       console.error("Mail ID is missing");
       router.push("/dashboard/mails/inbox");
       return;
     }
 
-    try {
-      setIsLoading(true);
-      const data = await fetchInternalMailDetail(Number(mailId), language);
-      setMailDetail(data);
-    } catch (error) {
-      console.error("Failed to fetch mail details:", error);
-      toast({
-        title: translate("mails.detail.errors.fetchFailed", language),
-        description: translate("mails.detail.errors.tryAgain", language),
-        variant: "destructive",
-      });
-    } finally {
+    async function loadMail() {
+      try {
+        setIsLoading(true);
+        const data = await fetchInternalMailDetail(Number(mailId), language);
+        setMail(data);
+      } catch (error) {
+        console.error("Error loading mail:", error);
+        setMail(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (hasReadAccess) {
+      loadMail();
+    } else {
       setIsLoading(false);
     }
-  }, [mailId, language, router, toast]);
-
-  useEffect(() => {
-    loadMailDetail();
-  }, [loadMailDetail]);
+  }, [mailId, hasReadAccess, router, language]);
 
   const handleArchive = async () => {
-    if (!hasArchiveAccess || !mailDetail) return;
-
+    if (!mail) return;
     try {
-      await archiveInternalMail(mailDetail.payload.id);
-      toast({
-        title: translate("mails.detail.success.mailArchived", language),
-        description: translate(
-          "mails.detail.success.mailArchivedDescription",
-          language
-        ),
-      });
-      router.push("/dashboard/mails/inbox");
+      setIsArchiving(true);
+      if (mail.is_archived) {
+        await unarchiveInternalMail(mail.id);
+      } else {
+        await archiveInternalMail(mail.id);
+      }
+      const updatedMail = await fetchInternalMailDetail(mail.id, language);
+      setMail(updatedMail);
     } catch (error) {
-      console.error("Failed to archive mail:", error);
-      toast({
-        title: translate("mails.detail.errors.archiveFailed", language),
-        description: translate("mails.detail.errors.tryAgain", language),
-        variant: "destructive",
-      });
+      console.error("Error archiving/unarchiving mail:", error);
+    } finally {
+      setIsArchiving(false);
     }
   };
-
-  const handleUnarchive = async () => {
-    if (!hasArchiveAccess || !mailDetail) return;
-
-    try {
-      await unarchiveInternalMail(mailDetail.payload.id);
-      toast({
-        title: translate("mails.detail.success.mailUnarchived", language),
-        description: translate(
-          "mails.detail.success.mailUnarchivedDescription",
-          language
-        ),
-      });
-      router.push("/dashboard/archive/mails/inbox");
-    } catch (error) {
-      console.error("Failed to unarchive mail:", error);
-      toast({
-        title: translate("mails.detail.errors.unarchiveFailed", language),
-        description: translate("mails.detail.errors.tryAgain", language),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "new":
-        return "bg-gray-100 text-gray-800";
-      case "read":
-        return "bg-blue-100 text-blue-800";
-      case "replied":
-        return "bg-green-100 text-green-800";
-      case "forwarded":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const renderStatus = (status: string) => (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeVariant(
-        status
-      )}`}
-    >
-      {translate(`mails.status.${status}`, language) || status}
-    </span>
-  );
-
-  const renderFiles = (files: InternalMailDetail["files"]) => (
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {files.map((file) => (
-        <Card key={file.id} className="flex flex-col justify-between">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center mb-4">
-              {getFileIcon(file.name)}
-            </div>
-            <h3
-              className="text-sm font-semibold text-center mb-2 truncate"
-              title={file.name}
-            >
-              {file.name}
-            </h3>
-            <p className="text-xs text-muted-foreground text-center">
-              {formatFileSize(file.size)}
-            </p>
-          </CardContent>
-          <CardFooter className="flex justify-center pb-4">
-            <Button variant="outline" size="sm" className="w-full">
-              <Download className="h-4 w-4 mr-2" />
-              {translate("mails.detail.actions.download", language)}
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderChildMails = (children: InternalMailDetail[]) => (
-    <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="replies">
-        <AccordionTrigger>
-          {translate("mails.detail.fields.replies", language)} (
-          {children.length})
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="space-y-4">
-            {children.map((child) => (
-              <Card key={child.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold">{child.title}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {child.sender_fullname}
-                    </p>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(child.sent_time, language)}
-                  </div>
-                </div>
-                <p className="mt-2 text-sm">{child.description}</p>
-              </Card>
-            ))}
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
 
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-3/4" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
-        </Card>
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-8 w-2/3" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-[200px]" />
+          <Skeleton className="h-[200px]" />
+        </div>
+        <Skeleton className="h-[300px]" />
       </div>
     );
   }
@@ -294,32 +168,32 @@ export default function MailDetailPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>
-              {translate("mails.common.accessDenied", language)}
+              {translate("mails.detail.accessDenied", language)}
             </CardTitle>
-            <CardDescription>
-              {translate("mails.common.noPermission", language)}
-            </CardDescription>
+            <p className="text-sm text-muted-foreground">
+              {translate("mails.detail.noPermission", language)}
+            </p>
           </CardHeader>
         </Card>
       </div>
     );
   }
 
-  if (!mailDetail) {
+  if (!mail) {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>
-              {translate("mails.common.notFound", language)}
+              {translate("mails.detail.notFound", language)}
             </CardTitle>
-            <CardDescription>
-              {translate("mails.detail.common.mailNotFound", language)}
-            </CardDescription>
+            <p className="text-sm text-muted-foreground">
+              {translate("mails.detail.notFoundDescription", language)}
+            </p>
           </CardHeader>
           <CardContent>
             <Button onClick={() => router.push("/dashboard/mails/inbox")}>
-              {translate("mails.common.actions.backToList", language)}
+              {translate("mails.detail.backToList", language)}
             </Button>
           </CardContent>
         </Card>
@@ -327,19 +201,52 @@ export default function MailDetailPage() {
     );
   }
 
-  const mail = mailDetail;
-
   return (
-    <div className="p-4 space-y-4">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="fixed top-4 right-4 z-50">
+        {isConnected ? (
+          <Badge variant="secondary" className="gap-1">
+            <Wifi className="h-3 w-3" />
+            {translate("mails.detail.connected", language)}
+          </Badge>
+        ) : (
+          <Badge
+            variant="secondary"
+            className="gap-1 bg-yellow-100 text-yellow-700"
+          >
+            <WifiOff className="h-3 w-3" />
+            {translate("mails.detail.reconnecting", language)}
+          </Badge>
+        )}
+      </div>
       <div className="flex justify-between items-center">
         <Button
-          variant="ghost"
+          variant="outline"
+          size="sm"
           onClick={() => router.push("/dashboard/mails/inbox")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />{" "}
-          {translate("mails.common.actions.back", language)}
+          {translate("mails.detail.backToList", language)}
         </Button>
-        <div className="space-x-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeVariant(
+              mail.status
+            )}`}
+          >
+            {translate(`mails.detail.status.${mail.status}`, language)}
+          </span>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              mail.is_archived
+                ? "bg-blue-100 text-gray-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {mail.is_archived
+              ? translate("mails.detail.isArchived", language)
+              : translate("mails.detail.notArchived", language)}
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -348,104 +255,152 @@ export default function MailDetailPage() {
             }
           >
             <Reply className="mr-2 h-4 w-4" />
-            {translate("mails.detail.actions.reply", language)}
+            {translate("mails.detail.reply", language)}
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
-            onClick={() =>
-              router.push(`/dashboard/mails/create?forward=${mail.id}`)
-            }
+            onClick={handleArchive}
+            disabled={isArchiving}
+            className="bg-blue-600 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
           >
-            <Forward className="mr-2 h-4 w-4" />
-            {translate("mails.detail.actions.forward", language)}
-          </Button>
-          {hasArchiveAccess &&
-            (mail.is_archived ? (
-              <Button variant="outline" size="sm" onClick={handleUnarchive}>
-                <Archive className="mr-2 h-4 w-4" />
-                {translate("mails.detail.actions.unarchive", language)}
-              </Button>
+            {isArchiving ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                {translate("mails.detail.archiving", language)}
+              </div>
             ) : (
-              <Button variant="outline" size="sm" onClick={handleArchive}>
+              <>
                 <Archive className="mr-2 h-4 w-4" />
-                {translate("mails.detail.actions.archive", language)}
-              </Button>
-            ))}
+                {mail.is_archived
+                  ? translate("mails.detail.unarchive", language)
+                  : translate("mails.detail.archive", language)}
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-muted">
           <div className="flex justify-between items-start">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback>
-                  {mail.sender_fullname.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <CardTitle className="text-lg">{mail.title}</CardTitle>
-                <CardDescription>
-                  {mail.sender_fullname} (
-                  {mail.sender.names.find((n) => n.lang === language)?.name ||
-                    mail.sender.names[0]?.name}
-                  )
-                </CardDescription>
-              </div>
+            <div>
+              <CardTitle className="text-2xl font-bold">{mail.title}</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {mail.description}
+              </p>
             </div>
             <div className="text-right">
-              <div className="text-sm text-muted-foreground">
-                {formatDate(mail.sent_time, language)}
-              </div>
-              {renderStatus(mail.status)}
+              <p className="text-sm font-medium">
+                {translate("mails.detail.sentDate", language)}:
+              </p>
+              <p className="text-lg font-bold">
+                {formatDate(Number(mail.sent_time), language)}
+              </p>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="font-semibold">
-              {translate("mails.detail.fields.recipients", language)}:
-            </span>
-            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-              {mail.receiver_fullname} (
-              {mail.receiver.names.find((n) => n.lang === language)?.name ||
-                mail.receiver.names[0]?.name}
-              )
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="font-semibold">
-              {translate("mails.detail.fields.mailType", language)}:
-            </span>
-            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-              {mail.mail_type.names.find((n) => n.lang === language)?.name ||
-                mail.mail_type.names[0]?.name}
-            </span>
-          </div>
-
-          <div className="text-sm">
-            <h3 className="font-semibold mb-1">
-              {translate("mails.detail.fields.description", language)}:
-            </h3>
-            <p>{mail.description}</p>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.sender", language)}:
+                </span>
+                <span>{mail.sender_fullname}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.recipient", language)}:
+                </span>
+                <span>{mail.receiver_fullname}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.mailType", language)}:
+                </span>
+                <span>
+                  {mail.mail_type.names.find((n) => n.lang === language)
+                    ?.name || mail.mail_type.slug}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.createdAt", language)}:
+                </span>
+                <span>{formatDate(Number(mail.created_at), language)}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Eye className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.viewedAt", language)}:
+                </span>
+                <span>
+                  {mail.viewed_at
+                    ? formatDate(Number(mail.viewed_at), language)
+                    : translate("mails.detail.notViewed", language)}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("mails.detail.code", language)}:
+                </span>
+                <span>{mail.code}</span>
+              </div>
+            </div>
           </div>
 
           {mail.files && mail.files.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-2">
-                {translate("mails.detail.fields.attachments", language)}:
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">
+                {translate("mails.detail.attachedFiles", language)}
               </h3>
-              {renderFiles(mail.files)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mail.files.map((file) => (
+                  <Card key={file.id} className="flex flex-col justify-between">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-center mb-4">
+                        {getFileIcon(file.name)}
+                      </div>
+                      <h4
+                        className="font-medium text-center mb-2 truncate"
+                        title={file.name}
+                      >
+                        {file.name}
+                      </h4>
+                      <p className="text-sm text-center text-muted-foreground">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex justify-center pb-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadFile(file.id)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        {translate("mails.detail.download", language)}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
-
-          {mail.children &&
-            mail.children.length > 0 &&
-            renderChildMails(mail.children)}
         </CardContent>
       </Card>
+
+      <InternalMailChat
+        mail={mail}
+        currentResponsibilityId={mail.receiver.id}
+      />
     </div>
   );
 }

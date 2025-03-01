@@ -82,7 +82,6 @@ const getFileIcon = (fileName: string) => {
 export default function ExternalMailDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mailType = searchParams.get("type") as "incoming" | "outgoing" | null;
   const mailId = searchParams.get("id");
   const { language } = useLanguage();
   const [mail, setMail] = useState<ExternalMailDetail | null>(null);
@@ -209,9 +208,11 @@ export default function ExternalMailDetailPage() {
           </CardHeader>
           <CardContent>
             <Button
-              onClick={() =>
-                router.push(`/dashboard/external-mail/${mailType}`)
-              }
+              onClick={() => {
+                const mailType =
+                  mail?.type === "inbox" ? "incoming" : "outgoing";
+                router.push(`/dashboard/external-mail/${mailType}`);
+              }}
             >
               {translate("detail.backToList", language)}
             </Button>
@@ -260,7 +261,15 @@ export default function ExternalMailDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push("/dashboard/external-mail")}
+          onClick={() => {
+            if (mail?.type === "inbox") {
+              router.push("/dashboard/external-mail/incoming");
+            } else if (mail?.type === "outbox") {
+              router.push("/dashboard/external-mail/outgoing");
+            } else {
+              router.push("/dashboard/external-mail");
+            }
+          }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />{" "}
           {translate("detail.backToList", language)}
@@ -334,7 +343,7 @@ export default function ExternalMailDetailPage() {
             </div>
             <div className="text-right">
               <p className="text-sm font-medium">
-                {mailType === "incoming"
+                {mail.type === "inbox"
                   ? translate("detail.receivedDate", language)
                   : translate("detail.sentDate", language)}
                 :
@@ -354,7 +363,7 @@ export default function ExternalMailDetailPage() {
               <div className="flex items-center space-x-2">
                 <User className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">
-                  {mailType === "incoming"
+                  {mail.type === "inbox"
                     ? translate("detail.sender", language)
                     : translate("detail.recipient", language)}
                   :

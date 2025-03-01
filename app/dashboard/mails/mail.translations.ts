@@ -38,6 +38,42 @@ export const mailTranslations = {
         "Просмотр и управление архивированными входящими письмами",
       manageArchivedSentDescription:
         "Просмотр и управление архивированными отправленными письмами",
+      detail: {
+        accessDenied: "Доступ запрещен",
+        noPermission: "У вас нет разрешения на просмотр этой страницы",
+        notFound: "Письмо не найдено",
+        notFoundDescription:
+          "Запрашиваемое письмо не существует или было удалено",
+        backToList: "Вернуться к списку",
+        connected: "Подключено",
+        reconnecting: "Переподключение...",
+        status: {
+          new: "Новое",
+          progress: "В процессе",
+          answered: "Отвечено",
+        },
+        isArchived: "Архивировано",
+        notArchived: "Не архивировано",
+        reply: "Ответить",
+        forward: "Переслать",
+        archiving: "Архивирование...",
+        archive: "Архивировать",
+        unarchive: "Разархивировать",
+        sender: "Отправитель",
+        recipient: "Получатель",
+        mailType: "Тип письма",
+        sentDate: "Дата отправки",
+        createdAt: "Создано",
+        viewedAt: "Просмотрено",
+        notViewed: "Не просмотрено",
+        code: "Код",
+        attachedFiles: "Прикрепленные файлы",
+        download: "Скачать",
+        typeMessage: "Введите сообщение",
+        sendMessage: "Отправить",
+        users: "Пользователи",
+        chat: "Чат",
+      },
     },
     common: {
       loading: "Загрузка...",
@@ -67,7 +103,7 @@ export const mailTranslations = {
       sender: "Iberiji",
       receiver: "Alyjy",
       subject: "Tema",
-      description: "Düşündiriş",
+      description: "Düş��ndiriş",
       tableStatus: "Ýagdaýy", // New translation
       status: {
         new: "Täze",
@@ -96,6 +132,41 @@ export const mailTranslations = {
         "Arhiwlenen gelen hatlary görüň we dolandyryň",
       manageArchivedSentDescription:
         "Arhiwlenen iberilen hatlary görüň we dolandyryň",
+      detail: {
+        accessDenied: "Giriş gadagan",
+        noPermission: "Bu sahypany görmäge rugsadyňyz ýok",
+        notFound: "Hat tapylmady",
+        notFoundDescription: "Soralýan hat ýok ýa-da öçürildi",
+        backToList: "Sanawa gaýtmak",
+        connected: "Baglanyşykly",
+        reconnecting: "Gaýtadan baglanylýar...",
+        status: {
+          new: "Täze",
+          progress: "Işlenýär",
+          answered: "Jogap berilen",
+        },
+        isArchived: "Arhiwlenen",
+        notArchived: "Arhiwlenmedi",
+        reply: "Jogap bermek",
+        forward: "Ugratmak",
+        archiving: "Arhiwlenýär...",
+        archive: "Arhiwlemek",
+        unarchive: "Arhiwden çykarmak",
+        sender: "Iberiji",
+        recipient: "Alyjy",
+        mailType: "Hat görnüşi",
+        sentDate: "Iberilen senesi",
+        createdAt: "Döredilen",
+        viewedAt: "Görülen",
+        notViewed: "Görülmedi",
+        code: "Kod",
+        attachedFiles: "Goşulan faýllar",
+        download: "Ýüklemek",
+        typeMessage: "Hat ýazyň",
+        sendMessage: "Ugrat",
+        users: "Ulanyjylar",
+        chat: "Söhbetdeşlik",
+      },
     },
     common: {
       loading: "Ýüklenýär...",
@@ -153,6 +224,42 @@ export const mailTranslations = {
       manageArchivedInboxDescription:
         "View and manage your archived incoming mails",
       manageArchivedSentDescription: "View and manage your archived sent mails",
+      detail: {
+        accessDenied: "Access Denied",
+        noPermission: "You don't have permission to view this page",
+        notFound: "Mail Not Found",
+        notFoundDescription:
+          "The requested mail does not exist or has been deleted",
+        backToList: "Back to List",
+        connected: "Connected",
+        reconnecting: "Reconnecting...",
+        status: {
+          new: "New",
+          progress: "In Progress",
+          answered: "Answered",
+        },
+        isArchived: "Archived",
+        notArchived: "Not Archived",
+        reply: "Reply",
+        forward: "Forward",
+        archiving: "Archiving...",
+        archive: "Archive",
+        unarchive: "Unarchive",
+        sender: "Sender",
+        recipient: "Recipient",
+        mailType: "Mail Type",
+        sentDate: "Sent Date",
+        createdAt: "Created At",
+        viewedAt: "Viewed At",
+        notViewed: "Not Viewed",
+        code: "Code",
+        attachedFiles: "Attached Files",
+        download: "Download",
+        typeMessage: "Type a message",
+        sendMessage: "Send",
+        users: "Users",
+        chat: "Chat",
+      },
     },
     common: {
       loading: "Loading...",
@@ -184,6 +291,7 @@ export const translate = (
     mailTranslations[language as keyof typeof mailTranslations];
   for (const k of keys) {
     if (translation[k] === undefined) {
+      console.warn(`Translation key not found: ${key}`);
       return key;
     }
     translation = translation[k];
@@ -195,5 +303,6 @@ export const translate = (
       translation
     );
   }
+  console.warn(`Translation is not a string: ${key}`);
   return key;
 };
