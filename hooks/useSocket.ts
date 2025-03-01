@@ -53,7 +53,7 @@ export function useSocket() {
 
   useEffect(() => {
     const token = StorageService.getItem("accessToken");
-    const newSocket = io("ws://216.250.8.139:3030/socket", {
+    const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       transports: ["websocket"],
       withCredentials: true,
       query: {
