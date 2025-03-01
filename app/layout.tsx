@@ -10,6 +10,9 @@ import { useRouter } from "next/navigation";
 import { Sidebar, SidebarProvider } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { usePathname } from "next/navigation";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -37,21 +40,24 @@ export default function RootLayout({
         <body
           className={`min-h-screen bg-white font-sans antialiased overflow-hidden`}
         >
-          {isDashboardRoute ? (
-            <SidebarProvider>
-              <div className="flex h-screen overflow-hidden">
-                <Sidebar />
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <Header />
-                  <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                    <div className="px-4 py-6">{children}</div>
-                  </main>
+          <NotificationProvider>
+            {isDashboardRoute ? (
+              <SidebarProvider>
+                <div className="flex h-screen overflow-hidden">
+                  <Sidebar />
+                  <div className="flex-1 flex flex-col overflow-hidden">
+                    <Header />
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                      <div className="px-4 py-6">{children}</div>
+                    </main>
+                  </div>
                 </div>
-              </div>
-            </SidebarProvider>
-          ) : (
-            children
-          )}
+              </SidebarProvider>
+            ) : (
+              children
+            )}
+            <ToastContainer />
+          </NotificationProvider>
         </body>
       </LanguageProvider>
     </html>

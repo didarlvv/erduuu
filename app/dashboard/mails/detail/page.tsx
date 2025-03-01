@@ -4,7 +4,11 @@ import { CardFooter } from "@/components/ui/card";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePermission } from "@/hooks/usePermission";
-import { fetchInternalMailDetail, archiveInternalMail } from "@/lib/api";
+import {
+  fetchInternalMailDetail,
+  archiveInternalMail,
+  unarchiveInternalMail,
+} from "@/lib/api";
 import type {
   InternalMailDetail,
   InternalMailDetailResponse,
@@ -152,6 +156,29 @@ export default function MailDetailPage() {
       console.error("Failed to archive mail:", error);
       toast({
         title: translate("mails.detail.errors.archiveFailed", language),
+        description: translate("mails.detail.errors.tryAgain", language),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!hasArchiveAccess || !mailDetail) return;
+
+    try {
+      await unarchiveInternalMail(mailDetail.payload.id);
+      toast({
+        title: translate("mails.detail.success.mailUnarchived", language),
+        description: translate(
+          "mails.detail.success.mailUnarchivedDescription",
+          language
+        ),
+      });
+      router.push("/dashboard/archive/mails/inbox");
+    } catch (error) {
+      console.error("Failed to unarchive mail:", error);
+      toast({
+        title: translate("mails.detail.errors.unarchiveFailed", language),
         description: translate("mails.detail.errors.tryAgain", language),
         variant: "destructive",
       });
@@ -333,12 +360,18 @@ export default function MailDetailPage() {
             <Forward className="mr-2 h-4 w-4" />
             {translate("mails.detail.actions.forward", language)}
           </Button>
-          {hasArchiveAccess && !mail.is_archived && (
-            <Button variant="outline" size="sm" onClick={handleArchive}>
-              <Archive className="mr-2 h-4 w-4" />
-              {translate("mails.detail.actions.archive", language)}
-            </Button>
-          )}
+          {hasArchiveAccess &&
+            (mail.is_archived ? (
+              <Button variant="outline" size="sm" onClick={handleUnarchive}>
+                <Archive className="mr-2 h-4 w-4" />
+                {translate("mails.detail.actions.unarchive", language)}
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={handleArchive}>
+                <Archive className="mr-2 h-4 w-4" />
+                {translate("mails.detail.actions.archive", language)}
+              </Button>
+            ))}
         </div>
       </div>
 

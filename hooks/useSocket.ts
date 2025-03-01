@@ -32,6 +32,20 @@ type FileWithPreview = {
   id: string;
 };
 
+type ChatMessage = {
+  id: string;
+  sender_fullname: string;
+  receiver_fullname: string;
+  sender_id: number;
+  receiver_id: number;
+  payload: string;
+  files: any[];
+  is_deleted: boolean;
+  is_read: boolean;
+  created_at: string;
+  replied_to_id: string | null;
+};
+
 export function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -39,7 +53,7 @@ export function useSocket() {
 
   useEffect(() => {
     const token = StorageService.getItem("accessToken");
-    const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+    const newSocket = io("ws://216.250.8.139:3030/socket", {
       transports: ["websocket"],
       withCredentials: true,
       query: {
@@ -319,6 +333,38 @@ export function useSocket() {
     [isConnected, socket]
   );
 
+  const emitRoomMessages = useCallback(
+    (data: { reference: string; mail_id: number; last_id?: number }) => {
+      if (socket && isConnected) {
+        console.log(`Socket: Emitting roomMessages - ${JSON.stringify(data)}`);
+        socket.emit("roomMessages", data);
+      }
+    },
+    [socket, isConnected]
+  );
+
+  const onRoomMessage = useCallback(
+    (callback: (messages: ChatMessage | ChatMessage[]) => void) => {
+      console.log("KDKDKDKDK");
+      if (socket) {
+        console.log("Socket: Setting up listener for roomMessage event");
+        socket.on("roomMessage", (messages) => {
+          console.log(
+            `Socket: Received roomMessage event - ${JSON.stringify(messages)}`
+          );
+          callback(messages);
+        });
+      }
+      return () => {
+        if (socket) {
+          console.log("Socket: Removing listener for roomMessage event");
+          socket.off("roomMessage", callback);
+        }
+      };
+    },
+    [socket]
+  );
+
   return {
     socket,
     isConnected,
@@ -335,5 +381,7 @@ export function useSocket() {
     onClientChats,
     onOnlineUsers,
     sendMessage,
+    emitRoomMessages,
+    onRoomMessage,
   };
 }

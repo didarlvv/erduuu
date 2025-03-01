@@ -10,6 +10,7 @@ export const mailTranslations = {
       receiver: "Получатель",
       subject: "Тема",
       description: "Описание",
+      tableStatus: "Статус", // New translation
       status: {
         new: "Новое",
         progress: "В процессе",
@@ -29,6 +30,14 @@ export const mailTranslations = {
       errors: {
         loadFailed: "Не удалось загрузить письма",
       },
+      archivedInbox: "Архив входящих писем",
+      archivedSent: "Архив отправленных писем",
+      manageArchivedInbox: "Управление архивом входящих писем",
+      manageArchivedSent: "Управление архивом отправленных писем",
+      manageArchivedInboxDescription:
+        "Просмотр и управление архивированными входящими письмами",
+      manageArchivedSentDescription:
+        "Просмотр и управление архивированными отправленными письмами",
     },
     common: {
       loading: "Загрузка...",
@@ -59,6 +68,7 @@ export const mailTranslations = {
       receiver: "Alyjy",
       subject: "Tema",
       description: "Düşündiriş",
+      tableStatus: "Ýagdaýy", // New translation
       status: {
         new: "Täze",
         progress: "Işlenýär",
@@ -78,6 +88,14 @@ export const mailTranslations = {
       errors: {
         loadFailed: "Hatlary ýükläp bolmady",
       },
+      archivedInbox: "Gelen hatlaryň arhiwi",
+      archivedSent: "Iberilen hatlaryň arhiwi",
+      manageArchivedInbox: "Arhiwlenen gelen hatlary dolandyrmak",
+      manageArchivedSent: "Arhiwlenen iberilen hatlary dolandyrmak",
+      manageArchivedInboxDescription:
+        "Arhiwlenen gelen hatlary görüň we dolandyryň",
+      manageArchivedSentDescription:
+        "Arhiwlenen iberilen hatlary görüň we dolandyryň",
     },
     common: {
       loading: "Ýüklenýär...",
@@ -108,6 +126,7 @@ export const mailTranslations = {
       receiver: "Receiver",
       subject: "Subject",
       description: "Description",
+      tableStatus: "Status", // New translation
       status: {
         new: "New",
         progress: "In Progress",
@@ -127,6 +146,13 @@ export const mailTranslations = {
       errors: {
         loadFailed: "Failed to load mails",
       },
+      archivedInbox: "Archived Inbox",
+      archivedSent: "Archived Sent Mails",
+      manageArchivedInbox: "Manage Archived Inbox",
+      manageArchivedSent: "Manage Archived Sent Mails",
+      manageArchivedInboxDescription:
+        "View and manage your archived incoming mails",
+      manageArchivedSentDescription: "View and manage your archived sent mails",
     },
     common: {
       loading: "Loading...",

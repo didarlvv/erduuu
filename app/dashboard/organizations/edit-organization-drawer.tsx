@@ -1,43 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
-import { Building2, Loader2 } from "lucide-react"
-import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect"
-import { updateOrganization, fetchOrganizationDetail } from "@/lib/api"
-import type { Organization, UpdateOrganizationRequest } from "@/lib/types"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { organizationTranslations } from "./organization.translations"
+import type React from "react";
+import { useState, useEffect } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { Building2, Loader2 } from "lucide-react";
+import { SearchableOrganizationSelect } from "@/components/SearchableOrganizationSelect";
+import { updateOrganization, fetchOrganizationDetail } from "@/lib/api";
+import type { Organization, UpdateOrganizationRequest } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { organizationTranslations } from "./organization.translations";
 
 const translate = (key: string, language: string): string => {
-  const keys = key.split(".")
-  let translation: any = organizationTranslations[language as keyof typeof organizationTranslations]
+  const keys = key.split(".");
+  let translation: any =
+    organizationTranslations[language as keyof typeof organizationTranslations];
   for (const k of keys) {
     if (translation[k] === undefined) {
-      return key
+      return key;
     }
-    translation = translation[k]
+    translation = translation[k];
   }
-  return translation
-}
+  return translation;
+};
 
 interface EditOrganizationDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
-  organization: Organization | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+  organization: Organization | null;
 }
 
-export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organization }: EditOrganizationDrawerProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+export function EditOrganizationDrawer({
+  open,
+  onOpenChange,
+  onSuccess,
+  organization,
+}: EditOrganizationDrawerProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [formData, setFormData] = useState<UpdateOrganizationRequest>({
     parent_id: null,
     slug: "",
@@ -46,124 +56,202 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
       { name: "", lang: "ru" },
       { name: "", lang: "en" },
     ],
-  })
-  const [originalData, setOriginalData] = useState<UpdateOrganizationRequest | null>(null)
-  const { toast } = useToast()
-  const { language } = useLanguage()
+  });
+  const [originalData, setOriginalData] =
+    useState<UpdateOrganizationRequest | null>(null);
+  const { toast } = useToast();
+  const { language } = useLanguage();
 
   useEffect(() => {
     async function loadOrganizationDetails() {
-      if (!organization?.id) return
+      if (!organization?.id) return;
+
+      setIsLoadingDetails(true);
 
       try {
-        setIsLoadingDetails(true)
-        const response = await fetchOrganizationDetail(organization.id, language)
-        const orgData = response.payload
+        // Fetch Turkmen data first
+        const tkResponse = await fetchOrganizationDetail(organization.id, "tk");
+        const tkData = tkResponse.payload;
 
-        const names = [
-          { name: orgData.names.find((n) => n.lang === "tk")?.name || "", lang: "tk" },
-          { name: organization.names.find((n) => n.lang === "ru")?.name || "", lang: "ru" },
-          { name: organization.names.find((n) => n.lang === "en")?.name || "", lang: "en" },
-        ]
+        // Update form with Turkmen data
+        setFormData((prev) => ({
+          parent_id: tkData.parent_id,
+          slug: tkData.slug,
+          names: [
+            {
+              name: tkData.names.find((n) => n.lang === "tk")?.name || "",
+              lang: "tk",
+            },
+            {
+              name: prev.names.find((n) => n.lang === "ru")?.name || "",
+              lang: "ru",
+            },
+            {
+              name: prev.names.find((n) => n.lang === "en")?.name || "",
+              lang: "en",
+            },
+          ],
+        }));
 
-        const initialData = {
-          parent_id: orgData.parent_id,
-          slug: orgData.slug,
-          names: names,
-        }
+        // Fetch Russian data
+        const ruResponse = await fetchOrganizationDetail(organization.id, "ru");
+        const ruData = ruResponse.payload;
 
-        setFormData(initialData)
-        setOriginalData(initialData)
+        // Update form with Russian data
+        setFormData((prev) => ({
+          ...prev,
+          names: prev.names.map((name) =>
+            name.lang === "ru"
+              ? {
+                  ...name,
+                  name: ruData.names.find((n) => n.lang === "ru")?.name || "",
+                }
+              : name
+          ),
+        }));
+
+        // Fetch English data
+        const enResponse = await fetchOrganizationDetail(organization.id, "en");
+        const enData = enResponse.payload;
+
+        // Update form with English data
+        setFormData((prev) => ({
+          ...prev,
+          names: prev.names.map((name) =>
+            name.lang === "en"
+              ? {
+                  ...name,
+                  name: enData.names.find((n) => n.lang === "en")?.name || "",
+                }
+              : name
+          ),
+        }));
+
+        // Set original data after all fetches are complete
+        setOriginalData({
+          parent_id: tkData.parent_id,
+          slug: tkData.slug,
+          names: [
+            {
+              name: tkData.names.find((n) => n.lang === "tk")?.name || "",
+              lang: "tk",
+            },
+            {
+              name: ruData.names.find((n) => n.lang === "ru")?.name || "",
+              lang: "ru",
+            },
+            {
+              name: enData.names.find((n) => n.lang === "en")?.name || "",
+              lang: "en",
+            },
+          ],
+        });
       } catch (error) {
-        console.error("Error loading organization details:", error)
+        console.error("Error loading organization details:", error);
         toast({
           variant: "destructive",
           title: translate("common.errorTitle", language),
-          description: translate("organizations.edit.loadError", language),
-        })
-        onOpenChange(false)
+          description:
+            error instanceof Error
+              ? error.message
+              : translate("organizations.edit.loadError", language),
+        });
+        onOpenChange(false);
       } finally {
-        setIsLoadingDetails(false)
+        setIsLoadingDetails(false);
       }
     }
 
     if (open && organization?.id) {
-      loadOrganizationDetails()
+      loadOrganizationDetails();
     }
-  }, [open, organization, toast, onOpenChange, language])
+  }, [open, organization, toast, onOpenChange, language]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!organization?.id || !originalData) {
       toast({
         variant: "destructive",
         title: translate("common.errorTitle", language),
         description: translate("organizations.edit.missingData", language),
-      })
-      return
+      });
+      return;
     }
 
-    const missingLanguages = formData.names.filter((name) => !name.name.trim())
+    const missingLanguages = formData.names.filter((name) => !name.name.trim());
     if (missingLanguages.length > 0) {
       toast({
         variant: "destructive",
         title: translate("common.errorTitle", language),
         description: translate("organizations.edit.nameRequired", language),
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
 
-      const changedFields: Partial<UpdateOrganizationRequest> = {}
+      const changedFields: Partial<UpdateOrganizationRequest> = {};
       if (formData.parent_id !== originalData.parent_id) {
-        changedFields.parent_id = formData.parent_id
+        changedFields.parent_id = formData.parent_id;
       }
       if (formData.slug !== originalData.slug) {
-        changedFields.slug = formData.slug
+        changedFields.slug = formData.slug;
       }
-      if (JSON.stringify(formData.names) !== JSON.stringify(originalData.names)) {
-        changedFields.names = formData.names
+      if (
+        JSON.stringify(formData.names) !== JSON.stringify(originalData.names)
+      ) {
+        changedFields.names = formData.names;
       }
 
       if (Object.keys(changedFields).length === 0) {
         toast({
           title: translate("organizations.edit.noChanges", language),
-          description: translate("organizations.edit.noChangesDescription", language),
-        })
-        onOpenChange(false)
-        return
+          description: translate(
+            "organizations.edit.noChangesDescription",
+            language
+          ),
+        });
+        onOpenChange(false);
+        return;
       }
 
-      await updateOrganization(organization.id, changedFields)
+      await updateOrganization(organization.id, changedFields);
 
       toast({
         title: translate("organizations.edit.success", language),
-        description: translate("organizations.edit.successDescription", language),
-      })
+        description: translate(
+          "organizations.edit.successDescription",
+          language
+        ),
+      });
 
-      onSuccess()
-      onOpenChange(false)
+      onSuccess();
+      onOpenChange(false);
     } catch (error) {
-      console.error("Error updating organization:", error)
+      console.error("Error updating organization:", error);
       toast({
         variant: "destructive",
         title: translate("common.errorTitle", language),
-        description: translate("organizations.edit.error", language),
-      })
+        description:
+          error instanceof Error
+            ? error.message
+            : translate("organizations.edit.error", language),
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleNameChange = (lang: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      names: prev.names.map((name) => (name.lang === lang ? { ...name, name: value } : name)),
-    }))
-  }
+      names: prev.names.map((name) =>
+        name.lang === lang ? { ...name, name: value } : name
+      ),
+    }));
+  };
 
   const LoadingSkeleton = () => (
     <div className="space-y-6">
@@ -180,20 +268,20 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
         <Skeleton className="h-[150px] w-full" />
       </div>
     </div>
-  )
+  );
 
   const getLanguageLabel = (lang: string) => {
     switch (lang) {
       case "tk":
-        return translate("languageSelector.turkmen", language)
+        return translate("languageSelector.turkmen", language);
       case "ru":
-        return translate("languageSelector.russian", language)
+        return translate("languageSelector.russian", language);
       case "en":
-        return translate("languageSelector.english", language)
+        return translate("languageSelector.english", language);
       default:
-        return lang
+        return lang;
     }
-  }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -221,8 +309,10 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
                     {translate("organizations.parentOrganization", language)}
                   </Label>
                   <SearchableOrganizationSelect
-                    onSelect={(id) => setFormData((prev) => ({ ...prev, parent_id: id }))}
-                    language={language}
+                    onSelect={(id) =>
+                      setFormData((prev) => ({ ...prev, parent_id: id }))
+                    }
+                    excludeParentId={organization?.id}
                     initialValue={formData.parent_id}
                   />
                 </div>
@@ -234,28 +324,42 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
                   <Input
                     id="slug"
                     value={formData.slug}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                    }
                     required
                   />
                 </div>
 
                 <div className="space-y-3 rounded-lg p-3 bg-muted/50">
-                  <h3 className="font-medium">{translate("organizations.names", language)}</h3>
+                  <h3 className="font-medium">
+                    {translate("organizations.names", language)}
+                  </h3>
                   {formData.names
                     .sort((a, b) => {
-                      const order = { tk: 1, ru: 2, en: 3 }
-                      return order[a.lang as keyof typeof order] - order[b.lang as keyof typeof order]
+                      const order = { tk: 1, ru: 2, en: 3 };
+                      return (
+                        order[a.lang as keyof typeof order] -
+                        order[b.lang as keyof typeof order]
+                      );
                     })
                     .map((name) => (
                       <div key={name.lang} className="space-y-2">
-                        <Label htmlFor={`name-${name.lang}`} className="text-sm font-medium">
+                        <Label
+                          htmlFor={`name-${name.lang}`}
+                          className="text-sm font-medium"
+                        >
                           {getLanguageLabel(name.lang)}
                         </Label>
                         <Input
                           id={`name-${name.lang}`}
                           value={name.name}
-                          onChange={(e) => handleNameChange(name.lang, e.target.value)}
-                          placeholder={`Enter name in ${getLanguageLabel(name.lang)}`}
+                          onChange={(e) =>
+                            handleNameChange(name.lang, e.target.value)
+                          }
+                          placeholder={`Enter name in ${getLanguageLabel(
+                            name.lang
+                          )}`}
                           required
                         />
                       </div>
@@ -270,7 +374,7 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
               {translate("common.cancel", language)}
             </Button>
             <Button
-              onClick={(e) => handleSubmit(e as any)}
+              onClick={handleSubmit}
               className="bg-blue-600 hover:bg-blue-700"
               disabled={isLoading || isLoadingDetails}
             >
@@ -287,6 +391,5 @@ export function EditOrganizationDrawer({ open, onOpenChange, onSuccess, organiza
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
-

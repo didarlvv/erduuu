@@ -56,7 +56,7 @@ export const InboxMailsTable: React.FC<InboxMailsTableProps> = ({
     { key: "sender", header: translate("mails.sender", language) },
     { key: "title", header: translate("mails.subject", language) },
     { key: "description", header: translate("mails.description", language) },
-    { key: "status", header: translate("mails.status", language) },
+    { key: "status", header: translate("mails.tableStatus", language) },
     { key: "sent_time", header: translate("mails.sentTime", language) },
     { key: "created_at", header: translate("mails.createdAt", language) },
     { key: "viewed_at", header: translate("mails.viewedAt", language) },

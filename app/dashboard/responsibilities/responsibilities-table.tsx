@@ -56,6 +56,7 @@ export function ResponsibilitiesTable({
   hasNextPage,
   translate,
   currentLanguage,
+  onEdit,
 }: ResponsibilitiesTableProps) {
   const getLocalizedName = (
     names: { name: string; lang: string }[],
@@ -245,7 +246,9 @@ export function ResponsibilitiesTable({
                         <DropdownMenuLabel>
                           {translate("common.actions")}
                         </DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => {}}>
+                        <DropdownMenuItem
+                          onClick={() => onEdit(responsibility)}
+                        >
                           <Pencil className="mr-2 h-4 w-4" />
                           <span>{translate("common.edit")}</span>
                         </DropdownMenuItem>

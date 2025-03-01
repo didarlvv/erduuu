@@ -12,7 +12,6 @@ import type {
 import type {
   OrganizationsResponse,
   OrganizationsQueryParams,
-  OrganizationDetailResponse,
   UpdateOrganizationRequest,
   UpdateOrganizationResponse,
 } from "@/lib/types";
@@ -58,6 +57,7 @@ import type { ChatUsersResponse, ChatUsersQueryParams } from "@/lib/types";
 import type { MailType } from "@/lib/types";
 import type { DetailedLogResponse } from "@/lib/types";
 import type { CreateResponsibilityDto } from "@/lib/types";
+import type { ApiResponse, Organization } from "@/lib/types";
 
 const api = createAuthenticatedAxios();
 
@@ -168,10 +168,15 @@ export async function fetchOrganizations(
 export async function fetchOrganizationDetail(
   id: number,
   lang: string
-): Promise<OrganizationDetailResponse> {
+): Promise<ApiResponse<Organization>> {
   const response = await api.get(`/organizations/specific/${id}`, {
     params: { lang },
   });
+
+  if (response.status !== 200) {
+    throw new Error("Failed to fetch organization details");
+  }
+
   return response.data;
 }
 

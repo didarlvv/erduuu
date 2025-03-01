@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
   CardContent,
@@ -25,6 +24,8 @@ import { chatTranslations } from "./chat.translations";
 import { FileUpload } from "@/components/FileUpload";
 import type { FileWithPreview } from "@/types/files";
 import { FileIcon } from "lucide-react";
+import { useNotification } from "@/contexts/NotificationContext";
+import { toast } from "react-toastify";
 
 interface Message {
   id: string;
@@ -49,6 +50,10 @@ interface PendingMessage {
   files: FileWithPreview[];
 }
 
+interface UserWithUnreadCount extends ChatUser {
+  unreadCount: number;
+}
+
 const STORAGE_KEY = "chatMessages";
 
 export default function ChatPage() {
@@ -64,9 +69,11 @@ export default function ChatPage() {
     onOnlineUsers,
     sendMessage,
   } = useSocket();
-  const [users, setUsers] = useState<ChatUser[]>([]);
+  const [users, setUsers] = useState<UserWithUnreadCount[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<number[]>([]);
-  const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserWithUnreadCount | null>(
+    null
+  );
   const [messages, setMessages] = useState<(Message | PendingMessage)[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +81,6 @@ export default function ChatPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
   const currentUser = getUserData();
   const pageSize = 10;
   const { language } = useLanguage();
@@ -85,6 +91,7 @@ export default function ChatPage() {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
   const [showFileUpload, setShowFileUpload] = useState(false);
+  const { addNotification } = useNotification();
 
   const translate = useCallback(
     (key: keyof typeof chatTranslations.en) => {
@@ -104,19 +111,28 @@ export default function ChatPage() {
         status: "active",
         ...(searchTerm && { search: searchTerm }),
       });
-      setUsers(response.payload.data);
+      const usersWithUnreadCount = response.payload.data.map(
+        (user: ChatUser) => ({
+          ...user,
+          unreadCount: 0, // Здесь мы должны получать реальное количество непрочитанных сообщений с сервера
+        })
+      );
+      setUsers(usersWithUnreadCount);
       setTotal(response.payload.total);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast({
-        variant: "destructive",
-        title: translate("loadError"),
-        description: translate("loadError"),
+      toast.error(translate("loadError"), {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchTerm, toast, translate]);
+  }, [currentPage, searchTerm, translate]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -176,6 +192,22 @@ export default function ChatPage() {
               )
             ) {
               updatedMessages.push(newMsg);
+              // Добавляем уведомление только если сообщение не от текущего пользователя
+              if (newMsg.sender_id !== currentUser?.id) {
+                addNotification(
+                  newMsg.payload,
+                  newMsg.sender_fullname,
+                  newMsg.id
+                );
+                // Увеличиваем счетчик непрочитанных сообщений
+                setUsers((prevUsers) =>
+                  prevUsers.map((user) =>
+                    user.id === newMsg.sender_id
+                      ? { ...user, unreadCount: user.unreadCount + 1 }
+                      : user
+                  )
+                );
+              }
             }
           });
           if (selectedUser) {
@@ -211,22 +243,36 @@ export default function ChatPage() {
 
     const unsubscribeUserJoined = onUserJoined((user) => {
       console.log("Received userJoined event:", user);
-      toast({
-        title: translate("userJoined"),
-        description: `${user.first_name} ${user.last_name} ${translate(
+      toast.info(
+        `${user.first_name} ${user.last_name} ${translate(
           "userJoined"
         ).toLowerCase()}`,
-      });
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
     });
 
     const unsubscribeUserLeft = onUserLeft((user) => {
       console.log("Received userLeft event:", user);
-      toast({
-        title: translate("userLeft"),
-        description: `${user.first_name} ${user.last_name} ${translate(
+      toast.info(
+        `${user.first_name} ${user.last_name} ${translate(
           "userLeft"
         ).toLowerCase()}`,
-      });
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
     });
 
     onOnlineUsers(handleOnlineUsers);
@@ -244,10 +290,11 @@ export default function ChatPage() {
     onCreatedMessage,
     onOnlineUsers,
     selectedUser,
-    toast,
     translate,
     scrollToBottom,
     saveMessagesToStorage,
+    addNotification,
+    currentUser,
   ]);
 
   useEffect(() => {
@@ -264,6 +311,13 @@ export default function ChatPage() {
         setLastSentMessageId(null);
         emitGetClientChat(selectedUser.id);
       }
+
+      // Сбрасываем счетчик непрочитанных сообщений при выборе пользователя
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedUser.id ? { ...user, unreadCount: 0 } : user
+        )
+      );
 
       const unsubscribeClientChats = onClientChats((history) => {
         console.log("Received conversation_history event:", history);
@@ -454,7 +508,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] gap-4 p-4">
+    <div className="flex h-[calc(100vh-140px)] gap-4">
       <div className="fixed top-4 right-4 z-50">
         {isConnected ? (
           <Badge variant="secondary" className="gap-1">
@@ -547,6 +601,11 @@ export default function ChatPage() {
                           )}
                         </div>
                       </div>
+                      {user.unreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-auto">
+                          {user.unreadCount}
+                        </Badge>
+                      )}
                     </button>
                   ))}
               </div>
@@ -672,4 +731,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
