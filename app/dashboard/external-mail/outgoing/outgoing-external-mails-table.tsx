@@ -55,24 +55,24 @@ export const OutgoingExternalMailsTable: React.FC<
 
   const columns = [
     { key: "userInfo", header: translate("outgoingMails.userInfo", language) },
-    {
-      key: "registrationCodes",
-      header: translate("outgoingMails.registrationCodes", language),
-    },
     { key: "title", header: translate("outgoingMails.subject", language) },
     {
       key: "description",
       header: translate("outgoingMails.description", language),
-    },
-    {
-      key: "organization",
-      header: translate("outgoingMails.organization", language),
     },
     { key: "status", header: translate("outgoingMails.status", language) },
     { key: "sentTime", header: translate("outgoingMails.sentTime", language) },
     {
       key: "receivedTime",
       header: translate("outgoingMails.receivedTime", language),
+    },
+    {
+      key: "registrationCodes",
+      header: translate("outgoingMails.registrationCodes", language),
+    },
+    {
+      key: "organization",
+      header: translate("outgoingMails.organization", language),
     },
   ];
 
@@ -95,27 +95,9 @@ export const OutgoingExternalMailsTable: React.FC<
             mail.responsibility.slug}
         </div>
       </TableCell>
-      <TableCell>
-        <div className="text-xs">
-          <span className="font-medium">
-            {translate("common.external", language)}:{" "}
-          </span>
-          {mail.external_registration_code || "-"}
-        </div>
-        <div className="text-xs">
-          <span className="font-medium">
-            {translate("common.internal", language)}:{" "}
-          </span>
-          {mail.internal_registration_code}
-        </div>
-      </TableCell>
       <TableCell className="max-w-[200px] truncate">{mail.title}</TableCell>
       <TableCell className="max-w-[200px] truncate">
         {mail.description}
-      </TableCell>
-      <TableCell className="max-w-[150px] truncate">
-        {mail.organization.names.find((n) => n.lang === language)?.name ||
-          mail.organization.slug}
       </TableCell>
       <TableCell>
         <span
@@ -136,6 +118,24 @@ export const OutgoingExternalMailsTable: React.FC<
       </TableCell>
       <TableCell className="whitespace-nowrap">
         {formatDateCompact(Number(mail.received_time), language)}
+      </TableCell>
+      <TableCell>
+        <div className="text-xs">
+          <span className="font-medium">
+            {translate("common.external", language)}:{" "}
+          </span>
+          {mail.external_registration_code || "-"}
+        </div>
+        <div className="text-xs">
+          <span className="font-medium">
+            {translate("common.internal", language)}:{" "}
+          </span>
+          {mail.internal_registration_code}
+        </div>
+      </TableCell>
+      <TableCell className="max-w-[150px] truncate">
+        {mail.organization.names.find((n) => n.lang === language)?.name ||
+          mail.organization.slug}
       </TableCell>
     </TableRow>
   );
