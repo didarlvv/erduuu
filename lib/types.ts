@@ -96,6 +96,14 @@ export interface ExternalMailDetail extends ExternalMail {
   }[];
   first_name: string;
   last_name: string;
+  mail_type: {
+    id: number;
+    slug: string;
+    names: {
+      lang: string;
+      name: string;
+    }[];
+  };
 }
 
 export interface InternalMail {

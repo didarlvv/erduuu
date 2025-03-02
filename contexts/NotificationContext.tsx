@@ -4,18 +4,18 @@ import type React from "react";
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { chatTranslations } from "@/app/dashboard/chat/chat.translations";
 import { usePathname } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast, type Id } from "react-toastify";
 
 interface NotificationContextType {
-  addNotification: (message: string, sender: string) => void;
+  addNotification: (message: string, sender: string, messageId: string) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -38,9 +38,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const { onNewMessageToChat } = useSocket();
   const { language } = useLanguage();
   const pathname = usePathname();
-  const [lastNotificationId, setLastNotificationId] = useState<string | null>(
-    null
-  );
+  const shownNotifications = useRef<Set<string>>(new Set());
+  const toastIds = useRef<Map<string, Id>>(new Map());
 
   const translate = useCallback(
     (key: keyof typeof chatTranslations.en) => {
@@ -53,20 +52,39 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     (message: string, sender: string, messageId: string) => {
       if (
         !pathname.startsWith("/dashboard/chat") &&
-        messageId !== lastNotificationId
+        !shownNotifications.current.has(messageId)
       ) {
-        toast.info(`${sender}: ${message}`, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        setLastNotificationId(messageId);
+        const existingToastId = toastIds.current.get(sender);
+
+        if (existingToastId) {
+          toast.update(existingToastId, {
+            render: `${sender}: ${message}`,
+            autoClose: 5000,
+          });
+        } else {
+          const newToastId = toast.info(`${sender}: ${message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          toastIds.current.set(sender, newToastId);
+        }
+
+        shownNotifications.current.add(messageId);
+
+        // Ограничиваем количество хранимых уведомлений
+        if (shownNotifications.current.size > 100) {
+          const oldestNotification = shownNotifications.current
+            .values()
+            .next().value;
+          shownNotifications.current.delete(oldestNotification);
+        }
       }
     },
-    [pathname, lastNotificationId]
+    [pathname]
   );
 
   useEffect(() => {
@@ -79,7 +97,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     onNewMessageToChat(handleNewMessage);
 
     return () => {
-      // Cleanup if necessary
+      // Очистка при размонтировании
+      toast.dismiss();
+      shownNotifications.current.clear();
+      toastIds.current.clear();
     };
   }, [onNewMessageToChat, addNotification]);
 

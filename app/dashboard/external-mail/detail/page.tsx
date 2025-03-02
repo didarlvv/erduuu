@@ -392,6 +392,16 @@ export default function ExternalMailDetailPage() {
                     ?.name || mail.responsibility.slug}
                 </span>
               </div>
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">
+                  {translate("detail.mailType", language)}:
+                </span>
+                <span>
+                  {mail.mail_type?.names.find((n) => n.lang === language)
+                    ?.name || mail.mail_type?.slug}
+                </span>
+              </div>
             </div>
             <div className="space-y-4">
               <div className="flex items-center space-x-2">

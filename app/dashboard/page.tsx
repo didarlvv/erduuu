@@ -1,14 +1,13 @@
 "use client";
 
 import type React from "react";
-
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchSpecialMails } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Mail, Users, ArrowRight, Bell } from "lucide-react";
+import { Search, Mail, Users, ArrowRight, Archive } from "lucide-react";
 import type { SpecialMail } from "@/types/special-mails";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
@@ -20,13 +19,14 @@ const translations = {
     specialMails: "Специальные письма",
     searchMails: "Поиск писем...",
     search: "Поиск",
-    loadError: "Не удалось загруэить письма. Пожалуйста, попробуйте позже.",
+    loadError: "Не удалось загрузить письма. Пожалуйста, попробуйте позже.",
     createdBy: "Создал",
     members: "Участники",
     noMails: "Писем не найдено",
     internal: "Внутреннее",
     external: "Внешнее",
     unreadMessages: "непрочитанных",
+    archived: "В архиве",
   },
   tk: {
     dashboard: "Dolandyryş paneli",
@@ -40,6 +40,7 @@ const translations = {
     internal: "Içerki",
     external: "Daşarky",
     unreadMessages: "okalmedik",
+    archived: "Arhiwde",
   },
   en: {
     dashboard: "Dashboard",
@@ -53,6 +54,7 @@ const translations = {
     internal: "Internal",
     external: "External",
     unreadMessages: "unread",
+    archived: "Archived",
   },
 };
 
@@ -112,6 +114,74 @@ export default function DashboardPage() {
     router.push(`${basePath}?id=${mail.mail_id}`);
   };
 
+  const renderMailsList = () => {
+    if (isLoading) {
+      return Array.from({ length: 3 }).map((_, index) => (
+        <Card key={index} className="p-4">
+          <Skeleton className="h-6 w-2/3 mb-2" />
+          <Skeleton className="h-4 w-1/3" />
+        </Card>
+      ));
+    }
+
+    if (mails.length === 0) {
+      return (
+        <div className="text-center text-muted-foreground py-8">
+          {translate("noMails", language)}
+        </div>
+      );
+    }
+
+    return mails.map((mail) => (
+      <Card
+        key={mail.mail_id}
+        className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+        onClick={() => handleMailClick(mail)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <h3 className="font-medium text-lg">{mail.title}</h3>
+              {mail.unread_count > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-700"
+                >
+                  {mail.unread_count} {translate("unreadMessages", language)}
+                </Badge>
+              )}
+              {mail.is_archived && (
+                <Badge variant="outline" className="flex items-center">
+                  <Archive className="h-3 w-3 mr-1" />
+                  {translate("archived", language)}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {translate("createdBy", language)}: {mail.creator}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>
+                {mail.member_count} {translate("members", language)}
+              </span>
+            </Badge>
+            <Badge
+              variant={mail.reference === "external" ? "secondary" : "default"}
+              className="flex items-center gap-1"
+            >
+              <Mail className="h-3 w-3" />
+              <span>{translate(mail.reference, language)}</span>
+            </Badge>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      </Card>
+    ));
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <h1 className="text-3xl font-semibold text-gray-900">
@@ -146,72 +216,7 @@ export default function DashboardPage() {
               {error}
             </div>
           ) : (
-            <div className="space-y-4">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <Card key={index} className="p-4">
-                    <Skeleton className="h-6 w-2/3 mb-2" />
-                    <Skeleton className="h-4 w-1/3" />
-                  </Card>
-                ))
-              ) : mails.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  {translate("noMails", language)}
-                </div>
-              ) : (
-                mails.map((mail) => (
-                  <Card
-                    key={mail.mail_id}
-                    className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => handleMailClick(mail)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-lg">{mail.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {translate("createdBy", language)}: {mail.creator}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Badge
-                          variant="outline"
-                          className="flex items-center gap-1"
-                        >
-                          <Users className="h-3 w-3" />
-                          <span>
-                            {mail.member_count} {translate("members", language)}
-                          </span>
-                        </Badge>
-                        <Badge
-                          variant={
-                            mail.reference === "external"
-                              ? "secondary"
-                              : "default"
-                          }
-                          className="flex items-center gap-1"
-                        >
-                          <Mail className="h-3 w-3" />
-                          <span>{translate(mail.reference, language)}</span>
-                        </Badge>
-                        {mail.unread_count > 0 && (
-                          <Badge
-                            variant="default"
-                            className="bg-blue-500 flex items-center gap-1"
-                          >
-                            <Bell className="h-3 w-3" />
-                            <span>
-                              {mail.unread_count}{" "}
-                              {translate("unreadMessages", language)}
-                            </span>
-                          </Badge>
-                        )}
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-                  </Card>
-                ))
-              )}
-            </div>
+            <div className="space-y-4">{renderMailsList()}</div>
           )}
         </CardContent>
       </Card>

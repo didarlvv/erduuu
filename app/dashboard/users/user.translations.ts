@@ -48,7 +48,7 @@ export const userTranslations = {
           "Вы не внесли никаких изменений в данные пользователя.",
         success: "Пользователь успешно обновлен",
         successDescription: "Информация о пользователе была успешно обновлена.",
-        error: "Ошибка при обновлении пользователя",
+        error: "Ошибка при обновлении пол��зователя",
         passwordHint: "Оставьте пустым, если не хотите менять",
         saving: "Сохранение...",
         saveChanges: "Сохранить изменения",
@@ -274,7 +274,7 @@ export const userTranslations = {
     },
     languageSelector: {
       turkmen: "Türkmen",
-      russian: "Русский",
+      russian: "Russian",
       english: "English",
     },
   },

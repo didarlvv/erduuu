@@ -198,7 +198,7 @@ export default function ChatPage() {
               )
             ) {
               updatedMessages.push(newMsg);
-              // Добавляем уведомление только если сообщение не от текущего пользователя
+              // Добавляем уведомление только если сообщение не от текущего пользователя и не от выбранного пользователя
               if (
                 newMsg.sender_id !== currentUser?.id &&
                 (!selectedUser || newMsg.sender_id !== selectedUser.id)
