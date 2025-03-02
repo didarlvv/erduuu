@@ -140,7 +140,7 @@ export default function CreateMailPage() {
         console.error("Error fetching available receivers:", error);
         toast({
           variant: "destructive",
-          title: translate("mails.common.error", language),
+          title: translate("mails.create.createError", language),
           description: translate(
             "mails.create.errors.fetchReceiversError",
             language
@@ -175,7 +175,7 @@ export default function CreateMailPage() {
         console.error("Error fetching responsibilities:", error);
         toast({
           variant: "destructive",
-          title: translate("mails.common.error", language),
+          title: translate("mails.create.createError", language),
           description: translate("responsibilities.fetchError", language),
         });
       } finally {
@@ -184,7 +184,7 @@ export default function CreateMailPage() {
     };
 
     fetchResponsibilities();
-  }, [toast, translate, language]);
+  }, [toast, translate, language, fetchAvailableReceivers]);
 
   const handleResponsibilityChange = async (responsibilityId: string) => {
     const id = Number.parseInt(responsibilityId);

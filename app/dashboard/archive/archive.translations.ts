@@ -95,7 +95,7 @@ export const archiveTranslations = {
       accessDenied: "Giriş gadagan",
       noPermission: "Bu sahypany görmäge ygtyýaryňyz ýok.",
       search: "Gözleg...",
-      filters: "Filtrler",
+      filters: "Süzgüçler",
       clearFilters: "Filtrleri arassalamak",
       recordsPerPage: "Sahypa başyna ýazgylar",
       records: "ýazgy",

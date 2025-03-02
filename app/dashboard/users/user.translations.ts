@@ -4,7 +4,8 @@ export const userTranslations = {
       title: "Пользователи",
       createUser: "Создать пользователя",
       manageUsers: "Управление пользователями",
-      manageDescription: "Просматривайте, фильтруйте и управляйте пользователями системы.",
+      manageDescription:
+        "Просматривайте, фильтруйте и управляйте пользователями системы.",
       loadError: "Ошибка загрузки пользователей",
       phone: "Телефон",
       status: "Статус",
@@ -29,7 +30,8 @@ export const userTranslations = {
         creating: "Создание...",
         createUser: "Создать пользователя",
         success: "Пользователь успешно создан",
-        successDescription: "Новый пользователь был успешно добавлен в систему.",
+        successDescription:
+          "Новый пользователь был успешно добавлен в систему.",
         error: "Ошибка при создании пользователя",
         roleRequired: "Необходимо выбрать хотя бы одну роль",
         loadError: "Ошибка загрузки данных",
@@ -42,7 +44,8 @@ export const userTranslations = {
         missingData: "Отсутствуют необходимые данные",
         roleRequired: "Необходимо выбрать хотя бы одну роль",
         noChanges: "Нет изменений",
-        noChangesDescription: "Вы не внесли никаких изменений в данные пользователя.",
+        noChangesDescription:
+          "Вы не внесли никаких изменений в данные пользователя.",
         success: "Пользователь успешно обновлен",
         successDescription: "Информация о пользователе была успешно обновлена.",
         error: "Ошибка при обновлении пользователя",
@@ -94,8 +97,9 @@ export const userTranslations = {
       title: "Ulanyjylar",
       createUser: "Ulanyjy döret",
       manageUsers: "Ulanyjylary dolandyrmak",
-      manageDescription: "Ulgamyň ulanyjylaryny gözden geçiriň, süzgüçleň we dolandyryň.",
-      loadError: "Ulanyjylary ýüklemekde ýalňyşlyk",
+      manageDescription:
+        "Ulgamyň ulanyjylaryny gözden geçiriň, süzgüçleň we dolandyryň.",
+      loadError: "Ulanyjylary ýüklemekde ýalňy��lyk",
       phone: "Telefon",
       status: "Ýagdaý",
       active: "Işjeň",
@@ -132,9 +136,11 @@ export const userTranslations = {
         missingData: "Zerur maglumatlar ýok",
         roleRequired: "Azyndan bir wezipe saýlamaly",
         noChanges: "Üýtgeşme ýok",
-        noChangesDescription: "Ulanyjynyň maglumatlaryna hiç hili üýtgeşme girizmediňiz.",
+        noChangesDescription:
+          "Ulanyjynyň maglumatlaryna hiç hili üýtgeşme girizmediňiz.",
         success: "Ulanyjy üstünlikli täzelendi",
-        successDescription: "Ulanyjy baradaky maglumatlar üstünlikli täzelendi.",
+        successDescription:
+          "Ulanyjy baradaky maglumatlar üstünlikli täzelendi.",
         error: "Ulanyjyny täzelemekde ýalňyşlyk",
         passwordHint: "Üýtgetmek islemeseňiz boş goýuň",
         saving: "Ýatda saklanýar...",
@@ -209,7 +215,8 @@ export const userTranslations = {
         creating: "Creating...",
         createUser: "Create User",
         success: "User created successfully",
-        successDescription: "The new user has been successfully added to the system.",
+        successDescription:
+          "The new user has been successfully added to the system.",
         error: "Error creating user",
         roleRequired: "At least one role must be selected",
         loadError: "Error loading data",
@@ -224,7 +231,8 @@ export const userTranslations = {
         noChanges: "No changes",
         noChangesDescription: "You haven't made any changes to the user data.",
         success: "User updated successfully",
-        successDescription: "The user information has been successfully updated.",
+        successDescription:
+          "The user information has been successfully updated.",
         error: "Error updating user",
         passwordHint: "Leave blank if you don't want to change",
         saving: "Saving...",
@@ -233,7 +241,8 @@ export const userTranslations = {
     },
     common: {
       accessDenied: "Access Denied",
-      noPermission: "You don't have the necessary permissions to view this page.",
+      noPermission:
+        "You don't have the necessary permissions to view this page.",
       cancel: "Cancel",
       errorTitle: "Error",
       optional: "Optional",
@@ -269,5 +278,4 @@ export const userTranslations = {
       english: "English",
     },
   },
-}
-
+};

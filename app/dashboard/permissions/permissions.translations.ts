@@ -4,7 +4,8 @@ export const permissionTranslations = {
       title: "Разрешения",
       createPermission: "Создать разрешение",
       managePermissions: "Управление разрешениями",
-      manageDescription: "Просматривайте, фильтруйте и управляйте разрешениями системы.",
+      manageDescription:
+        "Просматривайте, фильтруйте и управляйте разрешениями системы.",
       searchPlaceholder: "Поиск разрешений...",
       loadError: "Ошибка загрузки разрешений",
       noPermissionsFound: "Разрешения не найдены",
@@ -18,7 +19,8 @@ export const permissionTranslations = {
         title: "Создать разрешение",
         description: "Заполните форму для создания нового разрешения.",
         success: "Разрешение успешно создано",
-        successDescription: "Новое разрешение было успешно добавлено в систему.",
+        successDescription:
+          "Новое разрешение было успешно добавлено в систему.",
         error: "Ошибка при создании разрешения",
         loadRolesError: "Ошибка при загрузке ролей",
         creating: "Создание...",
@@ -95,7 +97,8 @@ export const permissionTranslations = {
       title: "Rugsatlar",
       createPermission: "Rugsat döretmek",
       managePermissions: "Rugsatlary dolandyrmak",
-      manageDescription: "Ulgamyň rugsatlaryny gözden geçiriň, süzgüçden geçirip dolandyryň.",
+      manageDescription:
+        "Ulgamyň rugsatlaryny gözden geçiriň, süzgüçden geçirip dolandyryň.",
       searchPlaceholder: "Rugsatlary gözläň...",
       loadError: "Rugsatlary ýüklemekde säwlik",
       noPermissionsFound: "Rugsatlar tapylmady",
@@ -200,7 +203,8 @@ export const permissionTranslations = {
         title: "Create Permission",
         description: "Fill out the form to create a new permission.",
         success: "Permission created successfully",
-        successDescription: "New permission has been successfully added to the system.",
+        successDescription:
+          "New permission has been successfully added to the system.",
         error: "Error creating permission",
         loadRolesError: "Error loading roles",
         creating: "Creating...",
@@ -212,7 +216,8 @@ export const permissionTranslations = {
         loadError: "Error loading permission details",
         loadRolesError: "Error loading roles",
         success: "Permission updated successfully",
-        successDescription: "Changes to the permission have been saved successfully.",
+        successDescription:
+          "Changes to the permission have been saved successfully.",
         error: "Error updating permission",
         noChanges: "No changes to save",
         noChangesDescription: "You haven't made any changes to the permission.",
@@ -230,7 +235,8 @@ export const permissionTranslations = {
     },
     common: {
       accessDenied: "Access Denied",
-      noPermission: "You don't have the necessary permissions to view this page.",
+      noPermission:
+        "You don't have the necessary permissions to view this page.",
       filters: "Filters",
       clearFilters: "Clear Filters",
       recordsPerPage: "Records per page",
@@ -272,20 +278,22 @@ export const permissionTranslations = {
       english: "English",
     },
   },
-}
+};
 
 export const translate = (key: string, language: string): string => {
-  const keys = key.split(".")
-  let translation: any = permissionTranslations[language as keyof typeof permissionTranslations]
+  const keys = key.split(".");
+  let translation: any =
+    permissionTranslations[language as keyof typeof permissionTranslations];
 
   for (const k of keys) {
     if (!translation || translation[k] === undefined) {
-      console.warn(`Translation missing for key: ${key} in language: ${language}`)
-      return key
+      console.warn(
+        `Translation missing for key: ${key} in language: ${language}`
+      );
+      return key;
     }
-    translation = translation[k]
+    translation = translation[k];
   }
 
-  return translation
-}
-
+  return translation;
+};

@@ -89,5 +89,4 @@ export const chatTranslations = {
     unsupportedFileType: "Unsupported file type",
     replyTo: "Reply to",
   },
-}
-
+};

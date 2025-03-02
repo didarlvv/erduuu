@@ -376,7 +376,7 @@ export default function CreateOutgoingExternalMailPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-xl transition-all"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
