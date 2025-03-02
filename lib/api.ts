@@ -101,25 +101,52 @@ export async function fetchFiles(
   return response?.data ?? { payload: [], total: 0 };
 }
 
-export async function downloadFile(fileId: number): Promise<void> {
-  const response = await api.get(`/manager/files/${fileId}`, {
-    responseType: "blob",
-  });
-  const contentType =
-    response.headers?.["content-type"] ?? "application/octet-stream";
-  const blob = new Blob([response.data], { type: contentType });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  const contentDisposition = response.headers?.["content-disposition"];
-  const fileName = contentDisposition
-    ? contentDisposition.split("filename=")[1]?.replace(/"/g, "")
-    : `file-${fileId}`;
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-  link.parentNode?.removeChild(link);
-  window.URL.revokeObjectURL(url);
+export function downloadFile(fileId: number): void {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    console.error("Access token not found");
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  const API_URL = "http://216.250.8.139:3030/api/v1";
+  xhr.open("GET", `${API_URL}/manager/files/${fileId}`, true);
+  xhr.responseType = "blob";
+  xhr.setRequestHeader("Accept", "*/*");
+  xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+  xhr.onload = function () {
+    if (this.status === 200) {
+      const blob = new Blob([this.response]);
+      const url = window.URL.createObjectURL(blob);
+      // const contentDisposition = this.getResponseHeader("Content-Disposition");
+      // let fileName = `file-${fileId}`;
+
+      // if (contentDisposition) {
+      //   const fileNameMatch = contentDisposition.match(
+      //     /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      //   );
+      //   if (fileNameMatch && fileNameMatch[1]) {
+      //     fileName = fileNameMatch[1].replace(/['"]/g, "");
+      //   }
+      // }
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "file";
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+    } else {
+      console.error("Ошибка при скачивании файла:", this.status);
+    }
+  };
+
+  xhr.onerror = () => {
+    console.error("Ошибка сети при попытке скачать файл");
+  };
+
+  xhr.send();
 }
 
 export async function uploadFiles(files: File[]): Promise<number[]> {

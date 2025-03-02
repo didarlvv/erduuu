@@ -24,7 +24,7 @@ import {
   X,
   PaperclipIcon,
 } from "lucide-react";
-import { fetchChatUsers } from "@/lib/api";
+import { fetchChatUsers, downloadFile } from "@/lib/api";
 import type { ChatUser } from "@/lib/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { chatTranslations } from "./chat.translations";
@@ -199,7 +199,10 @@ export default function ChatPage() {
             ) {
               updatedMessages.push(newMsg);
               // Добавляем уведомление только если сообщение не от текущего пользователя
-              if (newMsg.sender_id !== currentUser?.id) {
+              if (
+                newMsg.sender_id !== currentUser?.id &&
+                (!selectedUser || newMsg.sender_id !== selectedUser.id)
+              ) {
                 addNotification(
                   newMsg.payload,
                   newMsg.sender_fullname,
@@ -249,36 +252,10 @@ export default function ChatPage() {
 
     const unsubscribeUserJoined = onUserJoined((user) => {
       console.log("Received userJoined event:", user);
-      toast.info(
-        `${user.first_name} ${user.last_name} ${translate(
-          "userJoined"
-        ).toLowerCase()}`,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
     });
 
     const unsubscribeUserLeft = onUserLeft((user) => {
       console.log("Received userLeft event:", user);
-      toast.info(
-        `${user.first_name} ${user.last_name} ${translate(
-          "userLeft"
-        ).toLowerCase()}`,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
     });
 
     onOnlineUsers(handleOnlineUsers);
@@ -296,7 +273,6 @@ export default function ChatPage() {
     onCreatedMessage,
     onOnlineUsers,
     selectedUser,
-    translate,
     scrollToBottom,
     saveMessagesToStorage,
     addNotification,
@@ -488,15 +464,14 @@ export default function ChatPage() {
             {message.files && message.files.length > 0 && (
               <div className="mt-2 space-y-1">
                 {message.files.map((file) => (
-                  <a
+                  <button
                     key={file.id}
-                    href={`/api/files/${file.id}`}
-                    download={file.name}
+                    onClick={() => downloadFile(Number.parseInt(file.id))}
                     className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors"
                   >
                     <PaperclipIcon className="h-3.5 w-3.5" />
                     <span>{file.name}</span>
-                  </a>
+                  </button>
                 ))}
               </div>
             )}

@@ -15,7 +15,7 @@ import { translate } from "@/app/dashboard/mails/mail.translations";
 import { getUserData } from "@/lib/auth";
 import { formatDateCompact } from "@/lib/utils";
 import type { InternalMailDetail, ResponsibilitiesResponse } from "@/lib/types";
-import { fetchResponsibilitiesWithPermissions } from "@/lib/api";
+import { fetchResponsibilitiesWithPermissions, downloadFile } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 import { CompactFileUpload } from "@/components/CompactFileUpload";
 
@@ -255,15 +255,14 @@ export function InternalMailChat({
                         {msg.files && msg.files.length > 0 && (
                           <div className="mt-3 space-y-1.5">
                             {msg.files.map((file, index) => (
-                              <a
+                              <button
                                 key={index}
-                                href={`/api/files/${file.id}`}
-                                download={file.name}
+                                onClick={() => downloadFile(file.id)}
                                 className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors"
                               >
                                 <PaperclipIcon className="h-3.5 w-3.5" />
                                 {file.name}
-                              </a>
+                              </button>
                             ))}
                           </div>
                         )}
