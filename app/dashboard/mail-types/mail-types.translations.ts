@@ -47,7 +47,7 @@ export const mailTypeTranslations = {
     success: "Успешно",
     successDescription: "Новый тип письма был успешно создан",
     errorDescription:
-      "Не удалось созд��ть тип письма. Пожалуйста, попробуйте снова.",
+      "Не удалось создать тип письма. Пожалуйста, попробуйте снова.",
     errors: {
       emptySlug: "Сокращение не может быть пустым",
       emptyName: "Название типа письма не может быть пустым",
@@ -60,7 +60,7 @@ export const mailTypeTranslations = {
       noPermission: "У вас нет разрешения на просмотр этой страницы",
       filters: "Фильтры",
       clearFilters: "Очистить фильтры",
-      recordsPerPage: "Записей на стран��це",
+      recordsPerPage: "Записей на странице",
       records: "записей",
       sortBy: "Сортировать по",
       selectField: "Выберите поле",

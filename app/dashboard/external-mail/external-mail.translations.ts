@@ -287,7 +287,7 @@ export const externalMailTranslations = {
       sentDate: "Дата отправки",
       externalCode: "Внешний код",
       internalCode: "Внутренний код",
-      sender: "Отправите��ь",
+      sender: "Отправитель",
       recipient: "Получатель",
       organization: "Организация",
       position: "Должность",

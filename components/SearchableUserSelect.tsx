@@ -191,7 +191,7 @@ export function SearchableUserSelect({
             <div className="px-3 py-2 text-sm text-gray-500">Загрузка...</div>
           ) : users.length === 0 ? (
             <div className="px-3 py-2 text-sm text-gray-500">
-              Ничего �����е н��йдено
+              Ничего не на найдено
             </div>
           ) : (
             users.map((user) => (

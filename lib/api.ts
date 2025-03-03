@@ -112,7 +112,7 @@ export async function downloadFile(
   }
 
   const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://216.250.8.139:3030/api/v1";
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://216.250.8.139:3030/api/v1";
   const url = `${API_URL}/manager/files/${fileId}`;
 
   try {

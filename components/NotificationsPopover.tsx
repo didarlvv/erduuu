@@ -24,7 +24,7 @@ const translations = {
     code: "Код",
     internal: "Внутренний",
     external: "Внешний",
-    error: "О��ибка загрузки уведомлений",
+    error: "Ошибка загрузки уведомлений",
     loading: "Загрузка...",
   },
   tk: {

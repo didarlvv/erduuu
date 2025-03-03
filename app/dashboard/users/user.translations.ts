@@ -48,7 +48,7 @@ export const userTranslations = {
           "Вы не внесли никаких изменений в данные пользователя.",
         success: "Пользователь успешно обновлен",
         successDescription: "Информация о пользователе была успешно обновлена.",
-        error: "Ошибка при обновлении пол��зователя",
+        error: "Ошибка при обновлении пользователя",
         passwordHint: "Оставьте пустым, если не хотите менять",
         saving: "Сохранение...",
         saveChanges: "Сохранить изменения",
@@ -99,7 +99,7 @@ export const userTranslations = {
       manageUsers: "Ulanyjylary dolandyrmak",
       manageDescription:
         "Ulgamyň ulanyjylaryny gözden geçiriň, süzgüçleň we dolandyryň.",
-      loadError: "Ulanyjylary ýüklemekde ýalňy��lyk",
+      loadError: "Ulanyjylary ýüklemekde ýalňyşlyk",
       phone: "Telefon",
       status: "Ýagdaý",
       active: "Işjeň",

@@ -97,7 +97,7 @@ export const mailTranslations = {
         archiving: "Архивирование...",
         archive: "Архивировать",
         unarchive: "Разархивировать",
-        sender: "От��равитель",
+        sender: "Отправитель",
         recipient: "Получатель",
         mailType: "Тип письма",
         sentDate: "Дата отправки",
