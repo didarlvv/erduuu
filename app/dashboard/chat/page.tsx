@@ -155,6 +155,12 @@ export default function ChatPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
+
   const saveMessagesToStorage = useCallback(
     (userId: number, messages: Message[]) => {
       const storedData = localStorage.getItem(STORAGE_KEY);
@@ -186,53 +192,7 @@ export default function ChatPage() {
       setOnlineUsers(onlineUserIds);
     };
 
-    const unsubscribeNewMessageToChat = onNewMessageToChat(
-      (newMessages: Message[]) => {
-        console.log("Received newMessageToChat event:", newMessages);
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          newMessages.forEach((newMsg) => {
-            if (
-              !updatedMessages.some(
-                (existingMsg) => existingMsg.id === newMsg.id
-              )
-            ) {
-              updatedMessages.push(newMsg);
-              // Добавляем уведомление только если сообщение не от текущего пользователя и не от выбранного пользователя
-              if (
-                newMsg.sender_id !== currentUser?.id &&
-                (!selectedUser || newMsg.sender_id !== selectedUser.id)
-              ) {
-                addNotification(
-                  newMsg.payload,
-                  newMsg.sender_fullname,
-                  newMsg.id
-                );
-                // Увеличиваем счетчик непрочитанных сообщений
-                setUsers((prevUsers) =>
-                  prevUsers.map((user) =>
-                    user.id === newMsg.sender_id
-                      ? { ...user, unreadCount: (user.unreadCount || 0) + 1 }
-                      : user
-                  )
-                );
-              }
-            }
-          });
-          if (selectedUser) {
-            saveMessagesToStorage(
-              selectedUser.id,
-              updatedMessages as Message[]
-            );
-          }
-          return updatedMessages;
-        });
-        scrollToBottom();
-      }
-    );
-
-    const unsubscribeCreatedMessage = onCreatedMessage((newMessages) => {
-      console.log("Received createdMessage event:", newMessages);
+    const handleNewMessages = (newMessages: Message[]) => {
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         newMessages.forEach((newMsg) => {
@@ -240,6 +200,23 @@ export default function ChatPage() {
             !updatedMessages.some((existingMsg) => existingMsg.id === newMsg.id)
           ) {
             updatedMessages.push(newMsg);
+            if (
+              newMsg.sender_id !== currentUser?.id &&
+              (!selectedUser || newMsg.sender_id !== selectedUser.id)
+            ) {
+              addNotification(
+                newMsg.payload,
+                newMsg.sender_fullname,
+                newMsg.id
+              );
+              setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                  user.id === newMsg.sender_id
+                    ? { ...user, unreadCount: (user.unreadCount || 0) + 1 }
+                    : user
+                )
+              );
+            }
           }
         });
         if (selectedUser) {
@@ -248,7 +225,10 @@ export default function ChatPage() {
         return updatedMessages;
       });
       scrollToBottom();
-    });
+    };
+
+    const unsubscribeNewMessageToChat = onNewMessageToChat(handleNewMessages);
+    const unsubscribeCreatedMessage = onCreatedMessage(handleNewMessages);
 
     const unsubscribeUserJoined = onUserJoined((user) => {
       console.log("Received userJoined event:", user);
@@ -283,7 +263,6 @@ export default function ChatPage() {
     if (selectedUser) {
       const cachedMessages = loadMessagesFromStorage(selectedUser.id);
       setMessages(cachedMessages);
-      scrollToBottom();
 
       const lastMessageId = getLastMessageId(cachedMessages);
       if (lastMessageId) {
@@ -294,7 +273,6 @@ export default function ChatPage() {
         emitGetClientChat(selectedUser.id);
       }
 
-      // Сбрасываем счетчик непрочитанных сообщений при выборе пользователя
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === selectedUser.id ? { ...user, unreadCount: 0 } : user
@@ -302,7 +280,6 @@ export default function ChatPage() {
       );
 
       const unsubscribeClientChats = onClientChats((history) => {
-        console.log("Received conversation_history event:", history);
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages, ...history];
           if (selectedUser) {
@@ -410,6 +387,10 @@ export default function ChatPage() {
     setSelectedFiles((prev) => prev.filter((file) => file.id !== fileId));
   };
 
+  const handleFileDownload = (fileId: number, fileName: string) => {
+    downloadFile(fileId, fileName);
+  };
+
   const renderMessage = (message: Message | PendingMessage, index: number) => {
     const isCurrentUser =
       "sender_id" in message ? message.sender_id === currentUser?.id : true;
@@ -466,11 +447,17 @@ export default function ChatPage() {
                 {message.files.map((file) => (
                   <button
                     key={file.id}
-                    onClick={() => downloadFile(Number.parseInt(file.id))}
-                    className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    onClick={() =>
+                      handleFileDownload(Number.parseInt(file.id), file.name)
+                    }
+                    className={`flex items-center gap-1.5 text-sm font-medium ${
+                      isCurrentUser
+                        ? "text-blue-200 hover:text-blue-100"
+                        : "text-blue-600 hover:text-blue-700"
+                    } transition-colors`}
                   >
                     <PaperclipIcon className="h-3.5 w-3.5" />
-                    <span>{file.name}</span>
+                    <span className="underline">{file.name}</span>
                   </button>
                 ))}
               </div>

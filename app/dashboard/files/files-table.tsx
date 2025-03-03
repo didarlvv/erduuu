@@ -75,7 +75,7 @@ export function FilesTable({
 
   const handleDownload = async (file: File) => {
     try {
-      await downloadFile(file.id);
+      await downloadFile(file.id, file.original_name);
     } catch (error) {
       console.error("Error downloading file:", error);
       toast.error(translate("files.errorDownloading", language));

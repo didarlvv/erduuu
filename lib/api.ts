@@ -101,52 +101,60 @@ export async function fetchFiles(
   return response?.data ?? { payload: [], total: 0 };
 }
 
-export function downloadFile(fileId: number): void {
+export async function downloadFile(
+  fileId: number,
+  filename: string
+): Promise<void> {
   const token = localStorage.getItem("accessToken");
   if (!token) {
     console.error("Access token not found");
     return;
   }
 
-  const xhr = new XMLHttpRequest();
-  const API_URL = "http://216.250.8.139:3030/api/v1";
-  xhr.open("GET", `${API_URL}/manager/files/${fileId}`, true);
-  xhr.responseType = "blob";
-  xhr.setRequestHeader("Accept", "*/*");
-  xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://216.250.8.139:3030/api/v1";
+  const url = `${API_URL}/manager/files/${fileId}`;
 
-  xhr.onload = function () {
-    if (this.status === 200) {
-      const blob = new Blob([this.response]);
-      const url = window.URL.createObjectURL(blob);
-      // const contentDisposition = this.getResponseHeader("Content-Disposition");
-      // let fileName = `file-${fileId}`;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      // if (contentDisposition) {
-      //   const fileNameMatch = contentDisposition.match(
-      //     /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-      //   );
-      //   if (fileNameMatch && fileNameMatch[1]) {
-      //     fileName = fileNameMatch[1].replace(/['"]/g, "");
-      //   }
-      // }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "file";
-      link.click();
-
-      window.URL.revokeObjectURL(url);
-    } else {
-      console.error("Ошибка при скачивании файла:", this.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
 
-  xhr.onerror = () => {
-    console.error("Ошибка сети при попытке скачать файл");
-  };
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
 
-  xhr.send();
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename || `file-${fileId}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up resources
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    throw error;
+  }
+}
+
+// Вспомогательная функция для извлечения имени файла из заголовка Content-Disposition
+function getFilenameFromContentDisposition(
+  contentDisposition: string | null
+): string | null {
+  if (!contentDisposition) return null;
+  const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+  const matches = filenameRegex.exec(contentDisposition);
+  if (matches != null && matches[1]) {
+    return matches[1].replace(/['"]/g, "");
+  }
+  return null;
 }
 
 export async function uploadFiles(files: File[]): Promise<number[]> {

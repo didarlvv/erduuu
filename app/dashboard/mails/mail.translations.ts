@@ -66,7 +66,7 @@ export const mailTranslations = {
       endDate: "Конечная дата",
       all: "Все",
       errors: {
-        loadFailed: "Не удалось загрузит�� письма",
+        loadFailed: "Не удалось загрузить письма",
       },
       archivedInbox: "Архив входящих писем",
       archivedSent: "Архив отправленных писем",
@@ -97,7 +97,7 @@ export const mailTranslations = {
         archiving: "Архивирование...",
         archive: "Архивировать",
         unarchive: "Разархивировать",
-        sender: "Отправитель",
+        sender: "От��равитель",
         recipient: "Получатель",
         mailType: "Тип письма",
         sentDate: "Дата отправки",
@@ -111,6 +111,7 @@ export const mailTranslations = {
         sendMessage: "Отправить",
         users: "Пользователи",
         chat: "Чат",
+        chatDisabled: "Чат отключен для обработанных писем.",
       },
     },
     common: {
@@ -241,6 +242,7 @@ export const mailTranslations = {
         sendMessage: "Ugrat",
         users: "Ulanyjylar",
         chat: "Söhbetdeşlik",
+        chatDisabled: "Işlenen hatlar üçin söhbetdeşlik ýapyk.",
       },
     },
     common: {
@@ -372,6 +374,7 @@ export const mailTranslations = {
         sendMessage: "Send",
         users: "Users",
         chat: "Chat",
+        chatDisabled: "Chat is disabled for processed mails.",
       },
     },
     common: {

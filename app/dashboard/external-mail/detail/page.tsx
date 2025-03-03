@@ -448,7 +448,9 @@ export default function ExternalMailDetailPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => downloadFile(file.id)}
+                        onClick={() =>
+                          downloadFile(file.id, file.original_name)
+                        }
                       >
                         <Download className="h-4 w-4 mr-2" />
                         {translate("detail.download", language)}
@@ -466,6 +468,7 @@ export default function ExternalMailDetailPage() {
         <ExternalMailChat
           mail={mail}
           currentResponsibilityId={currentResponsibilityId}
+          isDisabled={mail.status === "proceeded"}
         />
       ) : null}
     </div>

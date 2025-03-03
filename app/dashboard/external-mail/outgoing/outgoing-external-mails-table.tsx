@@ -117,7 +117,9 @@ export const OutgoingExternalMailsTable: React.FC<
         {formatDateCompact(Number(mail.sent_time), language)}
       </TableCell>
       <TableCell className="whitespace-nowrap">
-        {formatDateCompact(Number(mail.received_time), language)}
+        {mail?.received_time
+          ? formatDateCompact(Number(mail.received_time), language)
+          : "-"}
       </TableCell>
       <TableCell>
         <div className="text-xs">

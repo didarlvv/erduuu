@@ -53,6 +53,12 @@ export function useSocket() {
 
   useEffect(() => {
     const token = StorageService.getItem("accessToken");
+
+    // Проверяем наличие токена перед попыткой подключения
+    if (!token) {
+      console.log("Socket: No token available, skipping connection attempt");
+      return; // Выходим из useEffect, не создавая соединение
+    }
     const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       transports: ["websocket"],
       withCredentials: true,

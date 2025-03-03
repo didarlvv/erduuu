@@ -16,6 +16,21 @@ export const responsibilityTranslations = {
       loadError: "Ошибка при загрузке должностей",
       readAll: "Читать все",
       sendAll: "Отправлять все",
+      responsibilityCreated: "Должность создана",
+      createSuccessDescription: "Должность успешно создана",
+      createError: "Ошибка при создании должности",
+      createErrorDescription:
+        "Не удалось создать должность. Пожалуйста, попробуйте еще раз.",
+      responsibilityUpdated: "Должность обновлена",
+      updateSuccessDescription: "Должность успешно обновлена",
+      updateError: "Ошибка при обновлении должности",
+      updateErrorDescription:
+        "Не удалось обновить должность. Пожалуйста, попробуйте еще раз.",
+      creating: "Создание...",
+      saving: "Сохранение...",
+      saveChanges: "Сохранить изменения",
+      createDescription: "Создайте новую должность, заполнив следующую форму",
+      editDescription: "Отредактируйте существующую должность",
     },
     common: {
       items: "записей",
@@ -34,6 +49,7 @@ export const responsibilityTranslations = {
       previous: "Предыдущая",
       next: "Следующая",
       loading: "Загрузка...",
+      cancel: "Отмена",
     },
   },
   tk: {
@@ -53,6 +69,19 @@ export const responsibilityTranslations = {
       loadError: "Wezipeleri ýüklemekde ýalňyşlyk ýüze çykdy",
       readAll: "Hemmesini oka",
       sendAll: "Hemmesini iber",
+      responsibilityCreated: "Wezipe döredildi",
+      createSuccessDescription: "Wezipe üstünlikli döredildi",
+      createError: "Wezipe döretmekde ýalňyşlyk",
+      createErrorDescription: "Wezipe döredip bolmady. Gaýtadan synanyşyň.",
+      responsibilityUpdated: "Wezipe täzelendi",
+      updateSuccessDescription: "Wezipe üstünlikli täzelendi",
+      updateError: "Wezipäni täzelemekde ýalňyşlyk",
+      updateErrorDescription: "Wezipäni täzeläp bolmady. Gaýtadan synanyşyň.",
+      creating: "Döredilýär...",
+      saving: "Ýatda saklanýar...",
+      saveChanges: "Üýtgeşmeleri ýatda sakla",
+      createDescription: "Aşakdaky formany dolduryp, täze wezipe dörediň",
+      editDescription: "Bar bolan wezipäni üýtgediň",
     },
     common: {
       items: "ýazgy",
@@ -71,6 +100,7 @@ export const responsibilityTranslations = {
       previous: "Öňki",
       next: "Indiki",
       loading: "Ýüklenýär...",
+      cancel: "Ýatyr",
     },
   },
   en: {
@@ -90,6 +120,22 @@ export const responsibilityTranslations = {
       loadError: "Error loading responsibilities",
       readAll: "Read All",
       sendAll: "Send All",
+      responsibilityCreated: "Responsibility Created",
+      createSuccessDescription: "Responsibility has been successfully created",
+      createError: "Error Creating Responsibility",
+      createErrorDescription:
+        "Failed to create responsibility. Please try again.",
+      responsibilityUpdated: "Responsibility Updated",
+      updateSuccessDescription: "Responsibility has been successfully updated",
+      updateError: "Error Updating Responsibility",
+      updateErrorDescription:
+        "Failed to update responsibility. Please try again.",
+      creating: "Creating...",
+      saving: "Saving...",
+      saveChanges: "Save Changes",
+      createDescription:
+        "Create a new responsibility by filling out the form below",
+      editDescription: "Edit an existing responsibility",
     },
     common: {
       items: "items",
@@ -108,6 +154,7 @@ export const responsibilityTranslations = {
       previous: "Previous",
       next: "Next",
       loading: "Loading...",
+      cancel: "Cancel",
     },
   },
 };

@@ -383,7 +383,7 @@ export default function InternalMailDetailPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => downloadFile(file.id)}
+                        onClick={() => downloadFile(file.id, file.name)}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         {translate("mails.detail.download", language)}
@@ -400,6 +400,7 @@ export default function InternalMailDetailPage() {
       <InternalMailChat
         mail={mail}
         currentResponsibilityId={mail.receiver.id}
+        isDisabled={mail.status === "proceeded"}
       />
     </div>
   );

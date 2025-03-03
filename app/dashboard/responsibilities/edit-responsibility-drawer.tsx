@@ -91,7 +91,7 @@ export function EditResponsibilityDrawer({
         ),
         variant: "default",
       });
-      // onSuccess();
+      onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating responsibility:", error);

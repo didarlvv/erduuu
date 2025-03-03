@@ -58,7 +58,7 @@ export default function ResponsibilitiesPage() {
     if (!hasReadAccess) {
       router.push("/dashboard");
     }
-  }, [hasReadAccess, router]);
+  }, [router, hasReadAccess]);
 
   const loadResponsibilities = useCallback(async () => {
     if (!hasReadAccess) return;
@@ -202,6 +202,7 @@ export default function ResponsibilitiesPage() {
             hasNextPage={hasNextPage}
             translate={(key) => translate(key, language)}
             currentLanguage={language}
+            onEdit={handleEditResponsibility}
           />
         </CardContent>
       </Card>

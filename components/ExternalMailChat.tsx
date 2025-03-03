@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +30,13 @@ interface ExtendedChatMessage extends ChatMessage {
 interface ExternalMailChatProps {
   mail: ExternalMailDetail;
   currentResponsibilityId: number;
+  isDisabled: boolean;
 }
 
 export function ExternalMailChat({
   mail,
   currentResponsibilityId,
+  isDisabled,
 }: ExternalMailChatProps) {
   const { language } = useLanguage();
   const [chatMessages, setChatMessages] = useState<ExtendedChatMessage[]>([]);
@@ -60,12 +62,17 @@ export function ExternalMailChat({
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
         messagesContainerRef.current.scrollHeight;
     }
   }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollToBottom]);
 
   useEffect(() => {
     if (isConnected && mail) {
@@ -77,6 +84,12 @@ export function ExternalMailChat({
   }, [isConnected, emitRoomMessages, mail]);
 
   useEffect(() => {
+    if (chatMessages.length > 0) {
+      scrollToBottom();
+    }
+  }, [chatMessages, scrollToBottom]);
+
+  useEffect(() => {
     const unsubscribe = onRoomMessage((data: ChatMessage | ChatMessage[]) => {
       console.log("Received new message:", data);
       if (Array.isArray(data)) {
@@ -84,10 +97,11 @@ export function ExternalMailChat({
       } else {
         setChatMessages((prev) => [...prev, data]);
       }
+      scrollToBottom();
     });
 
     return unsubscribe;
-  }, [onRoomMessage]);
+  }, [onRoomMessage, scrollToBottom]);
 
   useEffect(() => {
     async function loadUsers() {
@@ -146,16 +160,7 @@ export function ExternalMailChat({
       setMessageText("");
       setSelectedUsers([]);
       setUploadedFiles([]);
-
-      // Прокрутка чата вниз после отправки сообщения
-      if (messagesContainerRef.current) {
-        setTimeout(() => {
-          if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTop =
-              messagesContainerRef.current.scrollHeight;
-          }
-        }, 100);
-      }
+      scrollToBottom();
     }
   };
 
@@ -261,7 +266,7 @@ export function ExternalMailChat({
                             {msg.files.map((file, index) => (
                               <button
                                 key={index}
-                                onClick={() => downloadFile(file.id)}
+                                onClick={() => downloadFile(file.id, file.name)}
                                 className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 transition-colors"
                               >
                                 <PaperclipIcon className="h-3.5 w-3.5" />
@@ -306,6 +311,7 @@ export function ExternalMailChat({
                     onKeyPress={(e) =>
                       e.key === "Enter" && !isUploading && handleSendMessage()
                     }
+                    disabled={isDisabled}
                   />
                   <CompactFileUpload
                     onUploadSuccess={(fileIds) => {
@@ -320,11 +326,12 @@ export function ExternalMailChat({
                       console.log("File upload ended");
                       setIsUploading(false);
                     }}
+                    disabled={isDisabled}
                   />
                   <Button
                     size="icon"
                     onClick={handleSendMessage}
-                    disabled={isUploading}
+                    disabled={isUploading || isDisabled}
                   >
                     <Send className="h-4 w-4" />
                     <span className="sr-only">
@@ -332,10 +339,9 @@ export function ExternalMailChat({
                     </span>
                   </Button>
                 </div>
-                {selectedUsers.length > 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    {translate("detail.selectedUsers", language)}:{" "}
-                    {selectedUsers.length}
+                {isDisabled && (
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {translate("detail.chatDisabled", language)}
                   </div>
                 )}
               </div>

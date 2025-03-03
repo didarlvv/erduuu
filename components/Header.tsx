@@ -8,7 +8,6 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
 } from "lucide-react";
 import { getUserData } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -191,11 +190,6 @@ export function Header() {
             <MailTypesButtons mailTypes={mailTypes} language={language} />
           </nav>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/dashboard/chat">
-                <MessageSquare className="h-5 w-5" />
-              </Link>
-            </Button>
             <NotificationsPopover>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
