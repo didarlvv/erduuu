@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { User, Lock, Loader2 } from "lucide-react"
-import { login } from "@/lib/auth"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { User, Lock, Loader2 } from "lucide-react";
+import { login } from "@/lib/auth";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 
 const translations = {
   ru: {
@@ -43,40 +43,44 @@ const translations = {
     invalidCredentials: "Invalid username or password",
     errorTitle: "Login Error",
   },
-}
+};
 
 const translate = (key: string, language: string) => {
-  return translations[language as keyof typeof translations][key as keyof (typeof translations)["en"]] || key
-}
+  return (
+    translations[language as keyof typeof translations][
+      key as keyof (typeof translations)["en"]
+    ] || key
+  );
+};
 
 export function LoginForm() {
-  const [username, setUsername] = useState("admin")
-  const [password, setPassword] = useState("Hello123")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { language } = useLanguage()
-  const { toast } = useToast()
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { language } = useLanguage();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      await login(username, password)
-      router.push("/dashboard")
+      await login(username, password);
+      router.push("/dashboard");
     } catch (err) {
-      setError(translate("invalidCredentials", language))
+      setError(translate("invalidCredentials", language));
       toast({
         variant: "destructive",
         title: translate("errorTitle", language),
         description: translate("invalidCredentials", language),
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -118,7 +122,11 @@ export function LoginForm() {
         </div>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 px-4 py-3 rounded-md text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-md text-sm">
+          {error}
+        </div>
+      )}
 
       <Button
         type="submit"
@@ -135,6 +143,5 @@ export function LoginForm() {
         )}
       </Button>
     </form>
-  )
+  );
 }
-
